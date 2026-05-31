@@ -136,7 +136,7 @@ app.post("/api/whatsapp-handoff", (req, res) => {
 // API Endpoint to process streaming/chat responses via Gemini with Edge RAG context overlay
 app.post("/api/chat", async (req, res) => {
   try {
-    const { message, contextChunks, history = [] } = req.body;
+    const { message, contextChunks, history = [], activeLanguage = "en-IN" } = req.body;
 
     if (!message) {
       return res.status(400).json({ error: "Message string is required." });
@@ -168,8 +168,8 @@ app.post("/api/chat", async (req, res) => {
     });
 
     if (ai) {
-      // Execute standard generateContent on Google Gemma model
-      const modelName = "gemma-2-9b-it";
+      // Execute standard generateContent on Gemini model for optimal regional language performance
+      const modelName = "gemini-3.5-flash";
       const response = await ai.models.generateContent({
         model: modelName,
         contents: contentsPayload,
@@ -181,11 +181,11 @@ app.post("/api/chat", async (req, res) => {
       });
 
       const responseText = response.text || "I apologize, but I had some trouble fetching that. Let me look into that again.";
-      return res.json({ text: responseText, engine: "gemma-2-9b-it" });
+      return res.json({ text: responseText, engine: "gemini-3.5-flash" });
     } else {
       // Local fallbacks if API Key is not set or working
       // A high-fidelity pre-sales rule engine mockup so that the AI Studio preview runs instantly for judges
-      const fallbackText = getRuleFallback(message, contextChunks);
+      const fallbackText = getRuleFallback(message, contextChunks, activeLanguage);
       return res.json({ text: fallbackText, engine: "local_sales_rules_engine" });
     }
   } catch (error: any) {
@@ -195,9 +195,45 @@ app.post("/api/chat", async (req, res) => {
 });
 
 // Intelligent local rule fallback engine to guarantee immediate, perfect offline usage
-function getRuleFallback(message: string, contextChunks: string[]): string {
+function getRuleFallback(message: string, contextChunks: string[], activeLanguage: string = "en-IN"): string {
   const norm = message.toLowerCase();
   
+  // Script detection or selected active language check
+  const isTelugu = activeLanguage === "te-IN" || /[\u0C00-\u0C7F]/.test(message);
+  const isHindi = activeLanguage === "hi-IN" || /[\u0900-\u097F]/.test(message);
+  
+  if (isTelugu) {
+    if (norm.includes("rera") || norm.includes("రెరా") || norm.includes("అనుమతి")) {
+      return "మా అన్ని ప్రీమియం విల్లాలు మరియు అపార్ట్మెంట్స్ ఖచ్చితంగా RERA ఆమోదించబడినవి. మీకు ఏ లొకేషన్ వివరాలు కావాలి?";
+    }
+    if (norm.includes("price") || norm.includes("ధర") || norm.includes("డబ్బులు") || norm.includes("రేటు") || norm.includes("cost") || norm.includes("బడ్జెట్")) {
+      return "ప్రెస్టీజ్ సాలిటైర్ ధరలు ₹1.45 కోట్ల నుండి, అలాగే లోధా స్ప్లెండోరా ధరలు ₹85 లక్షల నుండి ప్రారంభమవుతాయి. ఇది మీకు అనుకూలమేనా?";
+    }
+    if (norm.includes("visit") || norm.includes("బుక్") || norm.includes("చూడాలి") || norm.includes("అపాయింట్మెంట్")) {
+      return "నేను మీ కొరకు ఈ వారాంతంలో ఉచిత ఖరీదైన కారు క్లయింట్ పికప్ తో కూడిన వీఐపీ సైట్ విజిట్ బుక్ చేయగలను. బుక్ చేయమంటారా?";
+    }
+    if (norm.includes("possession") || norm.includes("ఎప్పుడు") || norm.includes("గడువు") || norm.includes("ready")) {
+      return "లోధా స్ప్లెండోరా మెరీనా పూర్తిగా సిద్ధంగా ఉంది (Ready-to-move-in). ప్రెస్టీజ్ సాలిటైర్ డిసెంబర్ 2028 లో స్వాధీనం చేయబడుతుంది.";
+    }
+    return "నమస్కారం! నేను ప్రెస్టీజ్, డిఎల్ఎఫ్, మరియు లోధా డెవలపర్స్ యొక్క వాయిస్ అసిస్టెంట్‌ని. మీకు ఏ ప్రాజెక్ట్ గురించి సమాచారం కావాలి?";
+  }
+  
+  if (isHindi) {
+    if (norm.includes("rera") || norm.includes("रेरा") || norm.includes("मंजूरी")) {
+      return "हमारे सभी प्रीमियम प्रोजेक्ट्स पूरी तरह से रेरा (RERA) स्वीकृत हैं। आप किस शहर की प्रॉपर्टी देखना चाहेंगे?";
+    }
+    if (norm.includes("price") || norm.includes("दाम") || norm.includes("कीमत") || norm.includes("बजट") || norm.includes("cost") || norm.includes("कितना")) {
+      return "प्रेस्टीज सॉलिटेयर की शुरुआती कीमत ₹1.45 करोड़ और लोधा स्प्लेंडोरा की ₹85 लाख है। क्या आपका यही बजट है?";
+    }
+    if (norm.includes("visit") || norm.includes("बुक") || norm.includes("अपॉइंटमेंट") || norm.includes("देखना")) {
+      return "मैं इस वीकेंड आपके लिए वीआईपी साइट विजिट बुक कर सकता हूँ। क्या मैं आपकी स्लॉट सुरक्षित करूँ?";
+    }
+    if (norm.includes("possession") || norm.includes("कब") || norm.includes("ready") || norm.includes("तयार")) {
+      return "लोधा स्प्लेंडोरा मरीना तुरंत रहने के लिए तैयार है। प्रेस्टीज सॉलिटेयर का कब्ज़ा दिसंबर 2028 में प्रस्तावित है।";
+    }
+    return "नमस्ते! मैं आपका पर्सनल रियल एस्टेट वాయిस बॉट हूँ। मैं बेंगलुरु, गुरुग्राम और मुंबई के प्रीमियम घरों की सटीक जानकारी दे सकता हूँ।";
+  }
+
   if (norm.includes("portfolio_pivot_required") || message.includes("PORTFOLIO_PIVOT_REQUIRED")) {
     return "This tower starts at 1.5 Cr, but our developer has a premium project in XYZ location starting at 80 Lakhs.";
   }

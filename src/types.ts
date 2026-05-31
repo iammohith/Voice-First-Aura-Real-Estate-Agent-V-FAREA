@@ -57,7 +57,7 @@ export interface SpeechEngineState {
   micPermission: "prompt" | "granted" | "denied";
   isListening: boolean;
   isSpeaking: boolean;
-  activeLanguage: "en-IN" | "hi-IN"; // English (Indian) or Hindi
+  activeLanguage: "en-IN" | "hi-IN" | "bn-IN" | "te-IN" | "mr-IN" | "ta-IN" | "kn-IN" | "gu-IN" | "ml-IN"; // Supporting regional language codes
   selectedEngine: AssistantEngine;
   localGgufLoadingProgress: number; // 0 - 100
   localGgufLoaded: boolean;

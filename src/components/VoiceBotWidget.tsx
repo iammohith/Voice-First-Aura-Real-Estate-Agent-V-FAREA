@@ -276,6 +276,7 @@ export default function VoiceBotWidget({
             message: parsedText,
             contextChunks,
             projectId: activeProject?.id,
+            activeLanguage: voiceEngine.activeLanguage, // Pass the active language
             // Pass recent conversational context
             history: messages.slice(-4), 
           }),
@@ -298,6 +299,7 @@ export default function VoiceBotWidget({
             message: parsedText,
             contextChunks,
             projectId: activeProject?.id,
+            activeLanguage: voiceEngine.activeLanguage, // Pass the active language
           }),
         });
         const chatData = await response.json();
