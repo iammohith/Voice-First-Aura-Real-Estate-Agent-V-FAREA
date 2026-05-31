@@ -77,38 +77,6 @@ git push -u origin main
 
 ---
 
-## 📝 Submission Info: Google Agentic Premier League Form Template
-
-Here is a pre-formatted, highly polished layout containing **exactly what to copy-paste** into your submission fields to ensure maximum evaluation impact.
-
-### **Submission Field: Solution / Idea Name**
-```text
-Voice-First Aura Real Estate Agent (V-FAREA)
-```
-
-### **Submission Field: Short Tagline / Pitch (Under 150 characters)**
-```text
-Voice-first agentic pre-sales tool for Indian Real Estate with real-time browser speech engines, Vastu compliance, and automated WhatsApp handoffs.
-```
-
-### **Submission Field: Detailed Description of the Idea**
-```markdown
-### Core Concept
-V-FAREA is an edge-native, real-time pre-sales suite designed for top-tier Indian real estate developers (e.g., Prestige Group, DLF, Lodha). It transforms passive properties website traffic into hot leads by replacing passive forms with responsive, voice-driven AI interactions and real-time behavioral telemetry.
-
-### Under the Hood
-1. **Low-Latency Conversational Interface**: Instead of heavy cloud round-trips, the application leverages high-performance browser-native Speech Synthesis (TTS) and Web Speech APIs, matching user intents instantly.
-2. **CFO Luxury Suite with India Tax Models**: Dynamically computes real-time amortization, stamp duties, registration fees, and GST rates for key hubs (Karnataka, Haryana, Maharashtra), while embedding critical compliance variables like 1% TDS under Section 194-IA (for units above ₹50L).
-3. **Vastu Shastra Alignment & Remediation Evaluator**: Builds rapid engagement with Indian buyers by checking structural layout orientations (Agni kitchen, North-East entrances) and suggesting traditional compliance remedies.
-4. **FEMA & NRI Advisory Desk**: Guides cross-border investors on NRE, NRO, and Direct Remission legal bounds under FEMA rules.
-5. **Agentic "LeadHot" Triggers**: Monitors user commitment signals dynamically. The second a lead qualifies, the agent intercepts the session with custom voice cues and initiates an automated handoff dispatching official brochures and VIP calendar invites via WhatsApp.
-
-### Commercial & League Impact
-This solution attacks the industry's heaviest financial drain: pre-sales lead dilution. By collapsing callback intervals from 12 hours to 3 seconds, developers save up to 40% on digital marketing CAC. V-FAREA shows how Agentic AI elevates static business interfaces into real-world transaction facilitators.
-```
-
----
-
 ## 🏗️ Technical Architecture & Environment Configuration
 
 The workspace is configured as a full-stack, production-ready build:
