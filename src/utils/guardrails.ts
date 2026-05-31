@@ -1,0 +1,124 @@
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import { SAMPLE_PROJECTS } from "../data";
+
+/**
+ * Scans output text for currency formatting and verifies that any pricing quoted 
+ * is within the RERA-registered pricing ranges for that property project.
+ */
+export function enforcePriceGuardrail(text: string, projectId?: string): string {
+  // If we have a specific target project, fetch its unit configs
+  const projectsToCheck = projectId 
+    ? SAMPLE_PROJECTS.filter(p => p.id === projectId)
+    : SAMPLE_PROJECTS;
+
+  let verifiedText = text;
+
+  // Regular expression to scan for Indian Rupees formats like "1.45 Crores", "₹1.45 Cr", "85 Lakhs", "2.10 Cr"
+  // Let's capture numbers followed by Lakh/Crore/Cr
+  const priceRegex = /(\d+(?:\.\d+)?)\s*(Crores?|Cr|Lakhs?|L)/gi;
+
+  let match;
+  while ((match = priceRegex.exec(text)) !== null) {
+    const fullMatchStr = match[0];
+    const numericValue = parseFloat(match[1]);
+    const unit = match[2].toLowerCase();
+
+    // Calculate approximate numerical value in Rupees
+    let absoluteRupees = 0;
+    if (unit.startsWith("c")) {
+      absoluteRupees = numericValue * 10000000;
+    } else if (unit.startsWith("l")) {
+      absoluteRupees = numericValue * 100000;
+    }
+
+    if (absoluteRupees > 0) {
+      // Confirm if this quoted price matches ANY unit config min/max bounds in eligible projects
+      let isValidPrice = false;
+      
+      for (const proj of projectsToCheck) {
+        for (const config of proj.unitConfigs) {
+          // Allow a small 5% margin for negotiation/tax discussion
+          const lowerBound = config.numericPriceMin * 0.95;
+          const upperBound = config.numericPriceMax * 1.05;
+          
+          if (absoluteRupees >= lowerBound && absoluteRupees <= upperBound) {
+            isValidPrice = true;
+            break;
+          }
+        }
+        if (isValidPrice) break;
+      }
+
+      // If price quoted falls outside the official pre-approved limits, rewrite it
+      if (!isValidPrice) {
+        console.warn(`🚨 Guardrail Triggered: Quoted price "${fullMatchStr}" (${absoluteRupees} INR) is outside legal limits.`);
+        verifiedText = verifiedText.replace(
+          fullMatchStr,
+          "an amount subject to final configuration. Please refer to the official, RERA-certified price list for precise quotes"
+        );
+      }
+    }
+  }
+
+  return verifiedText;
+}
+
+/**
+ * Scrubs any personal 10-digit phone number leaks to protect client privacy compliance.
+ */
+export function sanitizePrivacyPII(text: string): string {
+  // Matches typical 10 digit numbers, with or without +91 / country tags
+  const phoneRegex = /(?:\+91[\-\s]?)?[789]\d{9}\b/g;
+  return text.replace(phoneRegex, "[PHONE NUMBER SCRUBBED FOR PRIVACY]");
+}
+
+/**
+ * Checks if properties are mentioned and highlights/injects mandatory RERA disclaimer and numbers.
+ */
+export function injectReraDisclaimer(text: string, projectId?: string): { finalResponse: string; disclaimerHappened: boolean } {
+  let finalResponse = text;
+  let disclaimerHappened = false;
+
+  const projectsToVerify = projectId 
+    ? SAMPLE_PROJECTS.filter(p => p.id === projectId)
+    : SAMPLE_PROJECTS;
+
+  for (const proj of projectsToVerify) {
+    // If response contains project name but NOT its RERA ID, append it
+    const nameNorm = proj.name.toLowerCase();
+    const txtNorm = text.toLowerCase();
+    
+    if (txtNorm.includes(nameNorm) && !txtNorm.includes(proj.reraId.toLowerCase())) {
+      // Append RERA registration endorsement phrase at punctuation boundary
+      finalResponse = finalResponse.trim();
+      
+      const reraAnnex = ` (RERA Reg: ${proj.reraId})`;
+      
+      // Try to inject before the final period, or simply append
+      if (finalResponse.endsWith(".")) {
+        finalResponse = finalResponse.slice(0, -1) + reraAnnex + ".";
+      } else {
+        finalResponse += reraAnnex;
+      }
+      
+      disclaimerHappened = true;
+    }
+  }
+
+  return { finalResponse, disclaimerHappened };
+}
+
+/**
+ * Standard client-side composite guardrail executor.
+ */
+export function auditPreSalesOutput(text: string, projectId?: string): string {
+  let result = text;
+  result = enforcePriceGuardrail(result, projectId);
+  result = sanitizePrivacyPII(result);
+  const reraResult = injectReraDisclaimer(result, projectId);
+  return reraResult.finalResponse;
+}

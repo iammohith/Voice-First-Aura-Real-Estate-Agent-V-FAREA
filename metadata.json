@@ -1,0 +1,6 @@
+{
+  "name": "Voice-First Pre-Sales Real Estate AI",
+  "description": "An edge-native, voice-first pre-sales AI assistant for Indian Real Estate, powered by browser speech APIs and hybrid AI engines.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
