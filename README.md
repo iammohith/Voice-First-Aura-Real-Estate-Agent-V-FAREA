@@ -1,12 +1,12 @@
-# AeroRERA: Voice-First Agentic Pre-Sales Suite for Indian Real Estate
+# Voice-First Aura Real Estate Agent (V-FAREA)
 
 An edge-native, voice-first real estate pre-sales engine designed to capture, qualify, and convert premium leads in real time. **Built for the Google Agentic Premier League and engineered to secure immediate buy-in from India’s top-tier developers & leasers** (e.g., DLF, Prestige Group, Macrotech/Lodha, Godrej Properties, and Brigade).
 
 ---
 
-## 🏆 Why AeroRERA Wins the Google Agentic Premier League
+## 🏆 Why V-FAREA Wins the Google Agentic Premier League
 
-Most real estate platforms are passive catalogs with static contact forms. **AeroRERA represents the transition from conversational interfaces to proactive Agentic actions:**
+Most real estate platforms are passive catalogs with static contact forms. **V-FAREA represents the transition from conversational interfaces to proactive Agentic actions:**
 
 1. **Edge-Native Low Latency voice engine**: Leverages browser-native Speech Synthesis (TTS) and Recognition (STT) coupled with backend orchestration, minimizing API transport costs and ensuring ultra-fast responses that mimic natural speech.
 2. **"LeadHot" Real-Time Interrogator Event System**: Continuously scores client interest based on behavioral triggers (e.g., viewing premium floor plans, downloading brochures, modifying unit configurations) and auto-triggers agentic voice responses like: *"I see you are highly interested! Let me dispatch our official RERA-compliant brochure directly to your WhatsApp."*
@@ -21,7 +21,7 @@ Most real estate platforms are passive catalogs with static contact forms. **Aer
 
 To get buy-in from leading Indian developers and commercial leasers, we solve their most expensive problem: **Lead Dilution and High Cost-Per-Lead (CPL)**.
 
-Currently, premium real estate leads take **4 to 24 hours** to receive a callback, resulting in a **70% drop in engagement**. AeroRERA engages users **within 3 seconds** while they are looking at the page:
+Currently, premium real estate leads take **4 to 24 hours** to receive a callback, resulting in a **70% drop in engagement**. V-FAREA engages users **within 3 seconds** while they are looking at the page:
 
 * **Eliminate Callback Latency**: Turns website visits into live voice consultations.
 * **Instant RERA Transparency**: Pre-loads RERA registration IDs, possession states, and exact tax breakdowns (GST standard versus possession-ready exemptions).
@@ -58,15 +58,15 @@ git init
 ```
 
 ### Step 2: Add Your Remote GitHub URL
-Create a new blank repository on [github.com](https://github.com) (do **not** check "Add a README" since we already have one). Copy the remote repository URL and run:
+Create a new blank repository on [github.com](https://github.com). Copy the remote repository URL and run:
 ```bash
-git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
+git remote add origin git@github.com:iammohith/Voice-First-Aura-Real-Estate-Agent-V-FAREA.git
 ```
 
 ### Step 3: Add Files & Make Your First Commit
 ```bash
 git add .
-git commit -m "feat: complete AeroRERA Agentic voice-first real estate suite"
+git commit -m "feat: complete V-FAREA Agentic voice-first real estate suite"
 ```
 
 ### Step 4: Rename Branch & Push
@@ -83,7 +83,7 @@ Here is a pre-formatted, highly polished layout containing **exactly what to cop
 
 ### **Submission Field: Solution / Idea Name**
 ```text
-AeroRERA: Voice-First Agentic Pre-Sales Suite for Indian Real Estate
+Voice-First Aura Real Estate Agent (V-FAREA)
 ```
 
 ### **Submission Field: Short Tagline / Pitch (Under 150 characters)**
@@ -94,7 +94,7 @@ Voice-first agentic pre-sales tool for Indian Real Estate with real-time browser
 ### **Submission Field: Detailed Description of the Idea**
 ```markdown
 ### Core Concept
-AeroRERA is an edge-native, real-time pre-sales suite designed for top-tier Indian real estate developers (e.g., Prestige Group, DLF, Lodha). It transforms passive properties website traffic into hot leads by replacing passive forms with responsive, voice-driven AI interactions and real-time behavioral telemetry.
+V-FAREA is an edge-native, real-time pre-sales suite designed for top-tier Indian real estate developers (e.g., Prestige Group, DLF, Lodha). It transforms passive properties website traffic into hot leads by replacing passive forms with responsive, voice-driven AI interactions and real-time behavioral telemetry.
 
 ### Under the Hood
 1. **Low-Latency Conversational Interface**: Instead of heavy cloud round-trips, the application leverages high-performance browser-native Speech Synthesis (TTS) and Web Speech APIs, matching user intents instantly.
@@ -104,7 +104,7 @@ AeroRERA is an edge-native, real-time pre-sales suite designed for top-tier Indi
 5. **Agentic "LeadHot" Triggers**: Monitors user commitment signals dynamically. The second a lead qualifies, the agent intercepts the session with custom voice cues and initiates an automated handoff dispatching official brochures and VIP calendar invites via WhatsApp.
 
 ### Commercial & League Impact
-This solution attacks the industry's heaviest financial drain: pre-sales lead dilution. By collapsing callback intervals from 12 hours to 3 seconds, developers save up to 40% on digital marketing CAC. AeroRERA shows how Agentic AI elevates static business interfaces into real-world transaction facilitators.
+This solution attacks the industry's heaviest financial drain: pre-sales lead dilution. By collapsing callback intervals from 12 hours to 3 seconds, developers save up to 40% on digital marketing CAC. V-FAREA shows how Agentic AI elevates static business interfaces into real-world transaction facilitators.
 ```
 
 ---
