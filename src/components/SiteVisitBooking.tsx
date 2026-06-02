@@ -48,6 +48,12 @@ export default function SiteVisitBooking({ project, onSuccess, onCancel }: SiteV
 
       const data = await response.json();
       if (data.success) {
+        // Save to sessionStorage for CRM-voice linkage
+        if (typeof window !== "undefined") {
+          window.sessionStorage.setItem("user_lead_phone", phone);
+          window.sessionStorage.setItem("user_lead_name", name);
+        }
+
         setSuccess(true);
         setResponseMsg(data.message);
         setTimeout(() => {

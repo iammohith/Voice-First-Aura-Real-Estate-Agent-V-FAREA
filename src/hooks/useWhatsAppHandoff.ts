@@ -38,6 +38,9 @@ export function useWhatsAppHandoff(speakFn: (text: string) => void) {
       // 2. Mock or call the server-side WhatsApp trigger endpoint
       setStatus({ isSending: true, delivered: false });
       
+      const sessionPhone = typeof window !== "undefined" ? window.sessionStorage.getItem("user_lead_phone") : null;
+      const targetPhone = sessionPhone || "919876543210";
+      
       try {
         const response = await fetch("/api/whatsapp-handoff", {
           method: "POST",
@@ -47,18 +50,26 @@ export function useWhatsAppHandoff(speakFn: (text: string) => void) {
             triggers,
             transcript,
             budgetDetected,
-            phone: "919876543210", // Default or parsed target
+            phone: targetPhone,
           }),
         });
         
         const resData = await response.json();
         if (resData.success) {
-          setStatus({ isSending: false, delivered: true, phoneNumber: "98765-43210" });
+          const displayPhone = resData.deliveryDetails?.phoneNumber || targetPhone;
+          setStatus({ 
+            isSending: false, 
+            delivered: true, 
+            phoneNumber: displayPhone 
+          });
           
           // Toast or dispatch UI notification
           if (typeof window !== "undefined") {
             const notifyEv = new CustomEvent("WhatsAppDelivered", {
-              detail: { phone: "98765-43210", brochure: "Official RERA Brochure" }
+              detail: { 
+                phone: displayPhone, 
+                brochure: resData.deliveryDetails?.projectDispatched || "Official RERA Brochure" 
+              }
             });
             window.dispatchEvent(notifyEv);
           }

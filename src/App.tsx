@@ -21,7 +21,9 @@ import {
   PhoneCall,
   CheckCircle,
   Building,
-  Sparkles
+  Sparkles,
+  Calculator,
+  Globe
 } from "lucide-react";
 
 export default function App() {
@@ -30,6 +32,9 @@ export default function App() {
   const [refreshLeadsTrigger, setRefreshLeadsTrigger] = useState(0);
   const [showFaqModal, setShowFaqModal] = useState(false);
   const [timeStr, setTimeStr] = useState("");
+  const [activeSuiteTab, setActiveSuiteTab] = useState<"finance" | "vastu" | "nri">("finance");
+  const [nriStatus, setNriStatus] = useState<boolean>(false);
+  const [activeSuiteModal, setActiveSuiteModal] = useState<"finance" | "vastu" | "nri" | null>(null);
 
   useEffect(() => {
     const updateTime = () => {
@@ -96,10 +101,10 @@ export default function App() {
           <div>
             <div className="flex items-center gap-1.5">
               <span className="text-[10px] text-blue-400 font-mono font-bold tracking-widest uppercase">
-                SYSTEM CORE // PRE-SALES ADVISOR
+                PRE-SALES CLIENT CONCIERGE
               </span>
             </div>
-            <h1 className="text-sm font-semibold font-mono tracking-tight text-white uppercase leading-none mt-1">
+            <h1 className="text-sm font-semibold tracking-tight text-white uppercase leading-none mt-1">
               SIGNATURE ESTATES AI
             </h1>
           </div>
@@ -137,26 +142,74 @@ export default function App() {
           
           {/* Active target showcase header banner conforming to Immersive UI */}
           {selectedProject && (
-            <div className="p-5 bg-[#0a0a0c] border border-[#1f1f23] rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-xl select-none animate-fade-in relative overflow-hidden group">
+            <div className="p-5 bg-[#0a0a0c] border border-[#1f1f23] rounded-xl flex flex-col gap-4 shadow-xl select-none animate-fade-in relative overflow-hidden group">
               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
-              <div className="space-y-1">
-                <span className="text-[10px] font-mono text-blue-400 uppercase tracking-widest block font-bold">
-                  ACTIVE GROUNDING TARGET // PROJECT_REF_{selectedProject.id.toUpperCase().replace('-', '_')}
-                </span>
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_6px_#3b82f6]"></div>
-                  {selectedProject.name}
-                </h2>
-                <p className="text-xs text-[#888] max-w-xl line-clamp-1">
-                  Developer: {selectedProject.developer} — RERA ID {selectedProject.reraId}
-                </p>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-mono text-amber-500 uppercase tracking-widest block font-extrabold flex items-center gap-1.5">
+                    <Sparkles className="w-3 h-3 text-amber-500" />
+                    EXECUTIVE PORTFOLIO TARGET
+                  </span>
+                  <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_6px_#3b82f6]"></div>
+                    {selectedProject.name}
+                  </h2>
+                  <p className="text-xs text-[#888] max-w-xl line-clamp-1">
+                    Developer: {selectedProject.developer} — RERA Registration {selectedProject.reraId}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
+                  <span className="px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold uppercase rounded flex items-center gap-1.5 shadow-[0_0_8px_rgba(16,185,129,0.1)]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    {selectedProject.location.toLowerCase().includes("hyderabad") ? "TS-RERA REGULATED" :
+                     selectedProject.location.toLowerCase().includes("bengaluru") ? "KA-RERA REGULATED" :
+                     selectedProject.location.toLowerCase().includes("gurugram") ? "HARERA REGULATED" : "MahaRERA REGULATED"}
+                  </span>
+                </div>
               </div>
 
-              <div className="flex items-center gap-2 self-start sm:self-center shrink-0">
-                <span className="px-2.5 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-mono font-bold uppercase rounded flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                  Glow Vector Stable
+              {/* Direct interactive access to Enterprise Decision suite popups */}
+              <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-[#1f1f23]/60 select-none text-xs">
+                <span className="text-[10.5px] font-mono font-bold text-blue-400 uppercase tracking-wide flex items-center gap-1.5 mr-1">
+                  Rapid Consultation Suites :
                 </span>
+                <div className="flex flex-wrap gap-2.5">
+                  <button
+                    id="trigger-popup-emi"
+                    onClick={() => {
+                      setActiveSuiteTab("finance");
+                      setActiveSuiteModal("finance");
+                    }}
+                    className="px-3.5 py-1.5 bg-blue-950/20 hover:bg-blue-600/20 text-blue-400 border border-blue-500/20 hover:border-blue-500/50 rounded font-semibold transition-all cursor-pointer flex items-center gap-1.5 hover:shadow-[0_0_10px_rgba(59,130,246,0.15)]"
+                  >
+                    <Calculator className="w-3.5 h-3.5" />
+                    EMI & Finance Planner
+                  </button>
+                  <button
+                    id="trigger-popup-vastu"
+                    onClick={() => {
+                      setActiveSuiteTab("vastu");
+                      setActiveSuiteModal("vastu");
+                    }}
+                    className="px-3.5 py-1.5 bg-amber-950/20 hover:bg-amber-600/20 text-amber-400 border border-amber-500/20 hover:border-amber-500/50 rounded font-semibold transition-all cursor-pointer flex items-center gap-1.5 hover:shadow-[0_0_10px_rgba(245,158,11,0.15)]"
+                  >
+                    <Compass className="w-3.5 h-3.5" />
+                    Vastu Shastra Compliance
+                  </button>
+                  <button
+                    id="trigger-popup-nri"
+                    onClick={() => {
+                      setActiveSuiteTab("nri");
+                      setNriStatus(true);
+                      setActiveSuiteModal("nri");
+                    }}
+                    className="px-3.5 py-1.5 bg-emerald-950/20 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/50 rounded font-semibold transition-all cursor-pointer flex items-center gap-1.5 hover:shadow-[0_0_10px_rgba(16,185,129,0.15)]"
+                  >
+                    <Globe className="w-3.5 h-3.5" />
+                    NRI FEMA Desk
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -169,7 +222,13 @@ export default function App() {
           />
 
           {/* Interactive CFO / Vastu Shastra Compliance and NRI Desk Suite */}
-          <CfoVastuSuite selectedProject={selectedProject} />
+          <CfoVastuSuite 
+            selectedProject={selectedProject} 
+            activeTab={activeSuiteTab}
+            onTabChange={(tab) => setActiveSuiteTab(tab)}
+            nriStatus={nriStatus}
+            onNriStatusChange={(status) => setNriStatus(status)}
+          />
         </section>
 
         {/* Right Side: Voice Bot & Real-Time leads Sync Feed (30% space) */}
@@ -180,6 +239,26 @@ export default function App() {
             activeProject={selectedProject}
             onBookingDetected={handleBookingDetected}
             onLeadAdded={() => setRefreshLeadsTrigger(prev => prev + 1)}
+            onActionDetected={(action) => {
+              if (action === "finance") {
+                setActiveSuiteTab("finance");
+                setActiveSuiteModal("finance");
+              } else if (action === "vastu") {
+                setActiveSuiteTab("vastu");
+                setActiveSuiteModal("vastu");
+              } else if (action === "nri") {
+                setActiveSuiteTab("nri");
+                setNriStatus(true);
+                setActiveSuiteModal("nri");
+              }
+              // Wait for render cycle, then scroll cleanly
+              setTimeout(() => {
+                const el = document.getElementById("cfo-vastu-suite-dashboard");
+                if (el) {
+                  el.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+              }, 100);
+            }}
           />
 
           {/* Lead sync log crm monitoring box */}
@@ -211,6 +290,46 @@ export default function App() {
               project={bookingProject} 
               onSuccess={handleBookingSuccess}
               onCancel={() => setBookingProject(null)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* CFO / VASTU / NRI SUITE MODAL POPUP */}
+      {activeSuiteModal && (
+        <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="relative w-full max-w-5xl bg-[#0b0c10] border border-slate-850 rounded-2xl p-6 shadow-2xl animate-fade-in max-h-[90vh] overflow-y-auto">
+            <button
+              onClick={() => setActiveSuiteModal(null)}
+              className="absolute right-6 top-6 p-1.5 bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-slate-200 rounded-lg border border-slate-800 hover:border-slate-750 transition-colors z-10 cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div className="mb-6 pr-12">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-500 rounded-full font-mono text-[10px] uppercase tracking-wider font-bold">
+                <Sparkles className="w-3 h-3 animate-spin duration-10000" />
+                Live Subsystem Popup
+              </span>
+              <h2 className="text-2xl font-bold font-sans text-white mt-2 flex items-center gap-2">
+                <span>Enterprise Decision Suite</span>
+                <span className="text-slate-500 font-normal">/</span> 
+                <span className="text-amber-500">
+                  {activeSuiteModal === "finance" ? "EMI & CFO Planner" : activeSuiteModal === "vastu" ? "Vastu Direction Compliance" : "NRI Compliance Desk"}
+                </span>
+              </h2>
+              <p className="text-sm text-slate-400 mt-1 max-w-2xl">
+                Loaded with real-time financial, vastu-spatial patterns, and FEMA legal directives for <strong className="text-slate-300 font-semibold">{selectedProject.name}</strong>. Adjust values below.
+              </p>
+            </div>
+            <CfoVastuSuite 
+              selectedProject={selectedProject} 
+              activeTab={activeSuiteModal}
+              onTabChange={(tab) => {
+                setActiveSuiteModal(tab);
+                setActiveSuiteTab(tab);
+              }}
+              nriStatus={nriStatus}
+              onNriStatusChange={(status) => setNriStatus(status)}
             />
           </div>
         </div>

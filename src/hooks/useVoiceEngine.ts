@@ -100,6 +100,7 @@ export function useVoiceEngine(
 
   const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
+  const speakTimeoutRef = useRef<number | null>(null);
 
   // Initialize Speech Synthesis Voices
   useEffect(() => {
@@ -282,51 +283,83 @@ export function useVoiceEngine(
 
   // Text-To-Speech function
   const speak = (text: string, onEndCallback?: () => void) => {
-    if (typeof window === "undefined" || !window.speechSynthesis) return;
+    try {
+      if (typeof window === "undefined" || !window.speechSynthesis) return;
 
-    // Direct speech stop first to prevent overlapping issues
-    window.speechSynthesis.cancel();
-    setIsSpeaking(false);
+      if (speakTimeoutRef.current) {
+        window.clearTimeout(speakTimeoutRef.current);
+        speakTimeoutRef.current = null;
+      }
 
-    if (!text || text.trim().length === 0) return;
+      // Direct speech stop first to prevent overlapping issues
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
 
-    // Strip out typical markdown or RERA/asterisk highlights
-    const cleanText = text
-      .replace(/\*{1,2}/g, "") // remove bold highlights
-      .replace(/RERA ID[:\- ]?/gi, "RERA Registration number")
-      .replace(/₹/g, "Rupees ")
-      .replace(/\(OC\)/gi, "Occupancy Certificate");
+      if (!text || text.trim().length === 0) return;
 
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    utteranceRef.current = utterance;
+      // Strip out typical markdown or RERA/asterisk highlights
+      const cleanText = text
+        .replace(/\*{1,2}/g, "") // remove bold highlights
+        .replace(/RERA ID[:\- ]?/gi, "RERA Registration number")
+        .replace(/₹/g, "Rupees ")
+        .replace(/\(OC\)/gi, "Occupancy Certificate");
 
-    if (selectedVoice) {
-      utterance.voice = selectedVoice;
+      const utterance = new SpeechSynthesisUtterance(cleanText);
+      utteranceRef.current = utterance;
+
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+      }
+      
+      // Configure natural speeds and heights
+      utterance.rate = 0.95; 
+      utterance.pitch = 1.0;
+
+      utterance.onstart = () => {
+        setIsSpeaking(true);
+      };
+
+      utterance.onend = () => {
+        setIsSpeaking(false);
+        if (onEndCallback) onEndCallback();
+      };
+
+      utterance.onerror = (e) => {
+        console.error("TTS Stream Error:", e);
+        setIsSpeaking(false);
+        if (onEndCallback) onEndCallback();
+      };
+
+      // Resuming synthesis before speaking is a vital mobile Safari / Chrome patch
+      try {
+        window.speechSynthesis.resume();
+      } catch (resumeError) {
+        console.warn("SpeechSynthesis resume warning:", resumeError);
+      }
+
+      // Execute speak inside a small timeout so that the asynchronous cancel operation
+      // completes on the browser's speech thread before we enqueue the new utterance.
+      speakTimeoutRef.current = window.setTimeout(() => {
+        try {
+          window.speechSynthesis.speak(utterance);
+        } catch (speakErr) {
+          console.error("Delayed speak call failure:", speakErr);
+          setIsSpeaking(false);
+        }
+      }, 60);
+
+    } catch (error) {
+      console.error("🚨 Bulletproof TTS speech synthesis failure shielded:", error);
+      setIsSpeaking(false);
+      if (onEndCallback) onEndCallback();
     }
-    
-    // Configure natural speeds and heights
-    utterance.rate = 0.95; 
-    utterance.pitch = 1.0;
-
-    utterance.onstart = () => {
-      setIsSpeaking(true);
-    };
-
-    utterance.onend = () => {
-      setIsSpeaking(false);
-      if (onEndCallback) onEndCallback();
-    };
-
-    utterance.onerror = (e) => {
-      console.error("TTS Stream Error:", e);
-      setIsSpeaking(false);
-      if (onEndCallback) onEndCallback();
-    };
-
-    window.speechSynthesis.speak(utterance);
   };
 
   const cancelSpeaking = () => {
+    if (speakTimeoutRef.current) {
+      window.clearTimeout(speakTimeoutRef.current);
+      speakTimeoutRef.current = null;
+    }
     if (typeof window !== "undefined" && window.speechSynthesis) {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);

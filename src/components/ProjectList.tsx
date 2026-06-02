@@ -35,6 +35,7 @@ export default function ProjectList({
     { value: "bengaluru", label: "Bengaluru" },
     { value: "gurugram", label: "Gurugram (NCR)" },
     { value: "mumbai", label: "Mumbai MMR" },
+    { value: "hyderabad", label: "Hyderabad" },
   ];
 
   const filteredProjects = SAMPLE_PROJECTS.filter((proj) => {
@@ -82,10 +83,11 @@ export default function ProjectList({
           return (
             <div
               key={proj.id}
-              className={`bg-[#0a0a0c] border rounded-xl overflow-hidden transition-all duration-300 flex flex-col hover:translate-y-[-2px] relative group ${
+              onClick={() => onSelectProject(proj)}
+              className={`bg-[#0a0a0c] border rounded-xl overflow-hidden transition-all duration-300 flex flex-col hover:translate-y-[-2px] relative group cursor-pointer ${
                 isFocused
                   ? "border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.12)]"
-                  : "border-[#1f1f23] hover:border-blue-500/20"
+                  : "border-[#1f1f23] hover:border-blue-500/30"
               }`}
             >
               {/* Image banner */}
@@ -169,14 +171,14 @@ export default function ProjectList({
                     {proj.highlights.slice(0, 2).map((hi, i) => (
                       <div key={i} className="flex items-start gap-1">
                         <span className="text-blue-500 select-none font-bold shrink-0">•</span>
-                        <span className="leading-tight truncate">{hi}</span>
+                         <span className="leading-tight truncate">{hi}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 {/* Control Action buttons */}
-                <div className="flex gap-2.5 pt-2 select-none">
+                <div className="flex gap-2.5 pt-2 select-none" onClick={(e) => e.stopPropagation()}>
                   {/* Focus Voice Advisor */}
                   <button
                     onClick={() => onSelectProject(proj)}
@@ -187,7 +189,7 @@ export default function ProjectList({
                     }`}
                   >
                     <Mic className={`w-3.5 h-3.5 ${isFocused ? "text-blue-400 animate-pulse" : "text-[#555]"}`} />
-                    {isFocused ? "ACTIVE REFERENCE_OK" : "FOCUS TARGET_ID"}
+                    {isFocused ? "ACTIVE CONCIERGE" : "ACTIVATE ADVISOR"}
                   </button>
 
                   {/* Booking form site-tour */}

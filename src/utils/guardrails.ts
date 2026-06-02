@@ -113,10 +113,43 @@ export function injectReraDisclaimer(text: string, projectId?: string): { finalR
 }
 
 /**
+ * Scrubs any spilled self-evaluation checklist lines that might accidentally bypass the system prompt guidelines.
+ */
+export function scrubSelfEvaluationArtifacts(text: string): string {
+  let cleaned = text;
+  
+  // Replace inline occurrences where checklist items are concatenated side-by-side or written continuously
+  cleaned = cleaned.replace(/(?:3-6 sentences\?|no long numbers\?)\s*(?:yes|no)[^*]*\*\s*no long numbers\?\s*(?:yes|no)[^\n]*/gi, "");
+  cleaned = cleaned.replace(/(?:3-6 sentences\?|no long numbers\?)\s*(?:yes|no)\s*(?:\([^)]*\))?,?/gi, "");
+  cleaned = cleaned.replace(/\s*\*?\s*(?:yes|no)\s*\([^)]*Crores[^)]*\)/gi, "");
+  cleaned = cleaned.replace(/(?:3-6 sentences\?|no long numbers\?)/gi, "");
+
+  // Strip lines that match common rule verification pattern leaks
+  const lines = cleaned.split("\n");
+  const filteredLines = lines.filter(line => {
+    const lower = line.toLowerCase().trim();
+    // check typical leakage questions/answers
+    if (lower.includes("sentences?") && (lower.includes("yes") || lower.includes("no"))) return false;
+    if (lower.includes("numbers?") && (lower.includes("yes") || lower.includes("no"))) return false;
+    if (lower.startsWith("*") && (lower.includes("yes") || lower.includes("no")) && (lower.includes("sentences") || lower.includes("numbers"))) return false;
+    if (lower.includes("rule check:") || lower.includes("compliance check:")) return false;
+    return true;
+  });
+
+  cleaned = filteredLines.join("\n").trim();
+  
+  // Clean up any double empty line gaps created
+  cleaned = cleaned.replace(/\n{3,}/g, "\n\n");
+  
+  return cleaned;
+}
+
+/**
  * Standard client-side composite guardrail executor.
  */
 export function auditPreSalesOutput(text: string, projectId?: string): string {
   let result = text;
+  result = scrubSelfEvaluationArtifacts(result);
   result = enforcePriceGuardrail(result, projectId);
   result = sanitizePrivacyPII(result);
   const reraResult = injectReraDisclaimer(result, projectId);

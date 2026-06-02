@@ -20,13 +20,29 @@ import {
 
 interface CfoVastuSuiteProps {
   selectedProject: Project;
+  activeTab?: "finance" | "vastu" | "nri";
+  onTabChange?: (tab: "finance" | "vastu" | "nri") => void;
+  nriStatus?: boolean;
+  onNriStatusChange?: (status: boolean) => void;
 }
 
-export default function CfoVastuSuite({ selectedProject }: CfoVastuSuiteProps) {
+export default function CfoVastuSuite({ 
+  selectedProject,
+  activeTab: controlledActiveTab,
+  onTabChange,
+  nriStatus: controlledNriStatus,
+  onNriStatusChange
+}: CfoVastuSuiteProps) {
   // Tabs: "finance", "vastu", "nri"
-  const [activeTab, setActiveTab] = useState<"finance" | "vastu" | "nri">("finance");
+  const [localActiveTab, setLocalActiveTab] = useState<"finance" | "vastu" | "nri">("finance");
+  const activeTab = controlledActiveTab !== undefined ? controlledActiveTab : localActiveTab;
+  const setActiveTab = (tab: "finance" | "vastu" | "nri") => {
+    setLocalActiveTab(tab);
+    if (onTabChange) onTabChange(tab);
+  };
 
   // State-specific financial calculation settings
+  const [selectedConfigIdx, setSelectedConfigIdx] = useState<number>(0);
   const [propertyValuePrice, setPropertyValuePrice] = useState<number>(15000000); // 1.5 Cr default
   const [downpaymentPct, setDownpaymentPct] = useState<number>(20);
   const [tenureYears, setTenureYears] = useState<number>(20);
@@ -37,12 +53,18 @@ export default function CfoVastuSuite({ selectedProject }: CfoVastuSuiteProps) {
   const [kitchenDirection, setKitchenDirection] = useState<string>("South-East");
   
   // NRI specific configurations
-  const [nriStatus, setNriStatus] = useState<boolean>(false);
+  const [localNriStatus, setLocalNriStatus] = useState<boolean>(false);
+  const nriStatus = controlledNriStatus !== undefined ? controlledNriStatus : localNriStatus;
+  const setNriStatus = (val: boolean) => {
+    setLocalNriStatus(val);
+    if (onNriStatusChange) onNriStatusChange(val);
+  };
   const [sourceAccount, setSourceAccount] = useState<"NRE" | "NRO" | "Direct">("NRE");
 
   // Preload property price whenever user switches selectedProject
   useEffect(() => {
     if (selectedProject && selectedProject.unitConfigs && selectedProject.unitConfigs.length > 0) {
+      setSelectedConfigIdx(0);
       // Load first unit config's min price as default
       const minPrice = selectedProject.unitConfigs[0].numericPriceMin;
       setPropertyValuePrice(minPrice);
@@ -64,10 +86,11 @@ export default function CfoVastuSuite({ selectedProject }: CfoVastuSuiteProps) {
   );
 
   // Mapped state-specific Stamp Duty, Registration & GST
-  // Whitefield Bengaluru (Karnataka), Sector 65 Gurugram (Haryana), Thane West (Maharashtra MMR)
+  // Whitefield Bengaluru (Karnataka), Sector 65 Gurugram (Haryana), Hyderabad (Telangana), Thane West (Maharashtra MMR)
   const getTaxRates = () => {
     const loc = selectedProject.location.toLowerCase();
-    if (loc.includes("bengaluru") || loc.includes("whitefield")) {
+    const id = selectedProject.id.toLowerCase();
+    if (loc.includes("bengaluru") || loc.includes("whitefield") || id.includes("solitaire")) {
       return {
         state: "Karnataka",
         stampDutyRate: 5.1,
@@ -75,13 +98,21 @@ export default function CfoVastuSuite({ selectedProject }: CfoVastuSuiteProps) {
         gstRate: selectedProject.possessionDate.toLowerCase().includes("ready") ? 0 : 5, // under-construction gets GST
         reraGov: "KA RERA"
       };
-    } else if (loc.includes("gurugram") || loc.includes("sector 65")) {
+    } else if (loc.includes("gurugram") || loc.includes("sector 65") || id.includes("horizon")) {
       return {
         state: "Haryana",
         stampDutyRate: 7.0,
         registrationRate: 1,
         gstRate: selectedProject.possessionDate.toLowerCase().includes("ready") ? 0 : 5,
         reraGov: "HARERA"
+      };
+    } else if (loc.includes("hyderabad") || loc.includes("telangana") || loc.includes("kokapet") || id.includes("legend")) {
+      return {
+        state: "Telangana",
+        stampDutyRate: 5.5, // 4% Stamp duty + 1.5% GHMC Transfer duty
+        registrationRate: 0.5, // 0.5% Registration Fee
+        gstRate: selectedProject.possessionDate.toLowerCase().includes("ready") ? 0 : 5,
+        reraGov: "TS RERA"
       };
     } else {
       // Default to Maharashtra MMR / Thane
@@ -96,6 +127,37 @@ export default function CfoVastuSuite({ selectedProject }: CfoVastuSuiteProps) {
   };
 
   const taxMetrics = getTaxRates();
+
+  // Generate Price Options Dropdown Array
+  const getPriceOptions = () => {
+    const options: number[] = [];
+    if (selectedProject?.unitConfigs && selectedProject.unitConfigs[selectedConfigIdx]) {
+      const config = selectedProject.unitConfigs[selectedConfigIdx];
+      const min = config.numericPriceMin;
+      const max = config.numericPriceMax;
+      
+      const diff = max - min;
+      let step = 500000; // 5 Lakhs default step
+      if (diff > 30000000) {
+        step = 5000000; // 50 Lakhs step
+      } else if (diff > 15000000) {
+        step = 2500000; // 25 Lakhs step
+      } else if (diff > 5000000) {
+        step = 1000000; // 10 Lakhs step
+      }
+      
+      for (let val = min; val < max; val += step) {
+        options.push(val);
+      }
+      if (!options.includes(max)) {
+        options.push(max);
+      }
+    }
+    return options;
+  };
+
+  const priceOptions = getPriceOptions();
+
   const stampDutyAmount = Math.round((propertyValuePrice * taxMetrics.stampDutyRate) / 100);
   const registrationAmount = Math.round((propertyValuePrice * taxMetrics.registrationRate) / 100);
   const gstAmount = Math.round((propertyValuePrice * taxMetrics.gstRate) / 100);
@@ -239,26 +301,83 @@ export default function CfoVastuSuite({ selectedProject }: CfoVastuSuiteProps) {
             {/* Inputs Section */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="text-[10px] font-mono font-bold text-[#666] uppercase">PropertyValue</label>
-                <div className="flex items-center bg-[#050506] border border-[#1f1f23] rounded px-2.5 py-1.5 justify-between">
-                  <span className="font-mono text-xs text-white font-semibold truncate">
-                    {formatIndianCurrency(propertyValuePrice)}
-                  </span>
-                </div>
+                <label className="text-[10px] font-mono font-bold text-[#666] uppercase block">Unit Configuration</label>
+                <select
+                  value={selectedConfigIdx}
+                  onChange={(e) => {
+                    const idx = parseInt(e.target.value);
+                    setSelectedConfigIdx(idx);
+                    if (selectedProject.unitConfigs && selectedProject.unitConfigs[idx]) {
+                      setPropertyValuePrice(selectedProject.unitConfigs[idx].numericPriceMin);
+                    }
+                  }}
+                  className="w-full bg-[#050506] border border-[#1f1f23] rounded px-2.5 py-1.5 text-xs text-white font-semibold font-mono cursor-pointer focus:border-blue-500 focus:outline-none"
+                >
+                  {selectedProject.unitConfigs?.map((config, idx) => (
+                    <option key={idx} value={idx}>
+                      {config.type} ({config.priceRange})
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="space-y-1">
-                <label className="text-[10px] font-mono font-bold text-[#666] uppercase">Downpayment ({downpaymentPct}%)</label>
-                <div className="flex items-center bg-[#050506] border border-[#1f1f23] rounded px-2.5 py-1.5 justify-between">
-                  <span className="font-mono text-xs text-white font-semibold truncate">
-                    {formatIndianCurrency(downpaymentAmount)}
-                  </span>
-                </div>
+                <label className="text-[10px] font-mono font-bold text-[#666] uppercase block">Property Value Price</label>
+                <select
+                  value={propertyValuePrice}
+                  onChange={(e) => setPropertyValuePrice(parseInt(e.target.value))}
+                  className="w-full bg-[#050506] border border-[#1f1f23] rounded px-2.5 py-1.5 text-xs text-white font-semibold font-mono cursor-pointer focus:border-blue-500 focus:outline-none"
+                >
+                  {priceOptions.map((price, idx) => (
+                    <option key={idx} value={price}>
+                      {formatIndianCurrency(price)}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
+            {/* Price Slider for selecting within the configuration range */}
+            {selectedProject.unitConfigs && selectedProject.unitConfigs[selectedConfigIdx] && (
+              <div className="space-y-2 bg-[#0d0d10] border border-[#1f1f23] p-3.5 rounded-lg">
+                <div className="flex justify-between text-[10px] font-mono font-bold text-[#888]">
+                  <span className="uppercase">FINE-TUNE PROPERTY VALUE ({selectedProject.unitConfigs[selectedConfigIdx].type})</span>
+                  <span className="text-white">Adjust Quote</span>
+                </div>
+                <input
+                  type="range"
+                  min={selectedProject.unitConfigs[selectedConfigIdx].numericPriceMin}
+                  max={selectedProject.unitConfigs[selectedConfigIdx].numericPriceMax}
+                  step={50000}
+                  value={propertyValuePrice}
+                  onChange={(e) => setPropertyValuePrice(parseInt(e.target.value))}
+                  className="w-full accent-blue-500 h-1 bg-[#1a1a24] rounded-lg cursor-pointer animate-pulse-slow"
+                />
+                <div className="flex justify-between text-[9px] font-mono text-[#666]">
+                  <span>Min: {formatIndianCurrency(selectedProject.unitConfigs[selectedConfigIdx].numericPriceMin)}</span>
+                  <span>Max: {formatIndianCurrency(selectedProject.unitConfigs[selectedConfigIdx].numericPriceMax)}</span>
+                </div>
+              </div>
+            )}
+
             {/* Interactive sliders for micro customization */}
             <div className="space-y-3 bg-[#0d0d10] border border-[#1f1f23] p-3.5 rounded-lg">
+              <div className="space-y-1">
+                <div className="flex justify-between text-[10px] font-mono font-bold text-[#888]">
+                  <span className="uppercase">Downpayment Percentage</span>
+                  <span className="text-white">{downpaymentPct}% ({formatIndianCurrency(downpaymentAmount)})</span>
+                </div>
+                <input
+                  type="range"
+                  min="10"
+                  max="50"
+                  step="5"
+                  value={downpaymentPct}
+                  onChange={(e) => setDownpaymentPct(parseInt(e.target.value))}
+                  className="w-full accent-blue-500 h-1 bg-[#1a1a24] rounded-lg cursor-pointer"
+                />
+              </div>
+
               <div className="space-y-1">
                 <div className="flex justify-between text-[10px] font-mono font-bold text-[#888]">
                   <span className="uppercase">Tenure Limit</span>

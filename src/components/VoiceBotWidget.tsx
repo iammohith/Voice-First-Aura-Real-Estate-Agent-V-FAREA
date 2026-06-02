@@ -132,12 +132,14 @@ interface VoiceBotWidgetProps {
   activeProject: Project | null;
   onBookingDetected: (projectName: string) => void;
   onLeadAdded: () => void;
+  onActionDetected?: (action: "finance" | "vastu" | "nri") => void;
 }
 
 export default function VoiceBotWidget({
   activeProject,
   onBookingDetected,
   onLeadAdded,
+  onActionDetected,
 }: VoiceBotWidgetProps) {
   const [engine, setEngine] = useState<AssistantEngine>("gemini_cloud");
   const [messages, setMessages] = useState<Message[]>([
@@ -238,7 +240,11 @@ export default function VoiceBotWidget({
         "Accessing configuration prices in our systems right now...",
       ];
       const selectedFiller = fillers[Math.floor(Math.random() * fillers.length)];
-      voiceEngine.speak(selectedFiller);
+      try {
+        voiceEngine.speak(selectedFiller);
+      } catch (speakErr) {
+        console.warn("Muted background filler speech warning:", speakErr);
+      }
     }
 
     // Inspect User Budget to Trigger Graceful Portfolio Cross-Sell / Pivot
@@ -318,8 +324,79 @@ export default function VoiceBotWidget({
       };
       setMessages((prev) => [...prev, assistantMsg]);
 
-      // Speak final, verified response
-      voiceEngine.speak(filteredText);
+      // Speak final, verified response with deep try-catch safety to prevent bubble-up network errors
+      try {
+        voiceEngine.speak(filteredText);
+      } catch (voiceSynthError) {
+        console.warn("Muted main response speech warning:", voiceSynthError);
+      }
+
+      // STEP 5.5: Check for financial, vastu, or NRI actions based on user message only
+      if (onActionDetected) {
+        const userText = text.toLowerCase().trim();
+        
+        const hasLaunchIntent = 
+          userText.includes("take me") || 
+          userText.includes("go to") || 
+          userText.includes("navigate") || 
+          userText.includes("open") || 
+          userText.includes("show") || 
+          userText.includes("launch") || 
+          userText.includes("popup") || 
+          userText.includes("pop-up") || 
+          userText.includes("trigger") || 
+          userText.includes("view") || 
+          userText === "emi calculator" ||
+          userText === "vastu compliance" ||
+          userText === "nri fema guide" ||
+          userText === "vastu compliance score" ||
+          userText.includes("ఓపెన్") || 
+          userText.includes("తీసుకెళ్ళు") || 
+          userText.includes("తీసుకువెళ్ళు") || 
+          userText.includes("చూపించు") || 
+          userText.includes("खोलें") || 
+          userText.includes("ओपन") || 
+          userText.includes("दिखाएं") || 
+          userText.includes("ले जाएं");
+
+        if (hasLaunchIntent) {
+          const isFinance = 
+            userText.includes("emi") || 
+            userText.includes("cfo") || 
+            userText.includes("finance") || 
+            userText.includes("interest") || 
+            userText.includes("calculate") || 
+            userText.includes("calculator") || 
+            userText.includes("కిస్తీ") || 
+            userText.includes("किस्त") || 
+            userText.includes("ब्याज");
+            
+          const isVastu = 
+            userText.includes("vastu") || 
+            userText.includes("shastra") || 
+            userText.includes("వాస్తు") || 
+            userText.includes("దిశ") || 
+            userText.includes("दिशा") || 
+            userText.includes("वास्तु");
+            
+          const isNri = 
+            userText.includes("nri") || 
+            userText.includes("fema") || 
+            userText.includes("foreign") || 
+            userText.includes("abroad") || 
+            userText.includes("repatriat") || 
+            userText.includes("ఎన్‌ఆర్‌ఐ") || 
+            userText.includes("एनआरआई");
+
+          if (isFinance) {
+            onActionDetected("finance");
+          } else if (isVastu) {
+            onActionDetected("vastu");
+          } else if (isNri) {
+            onActionDetected("nri");
+          }
+        }
+      }
 
       // STEP 6: Check booking intents
       const lastMsg = messages.length > 0 ? messages[messages.length - 1] : null;
@@ -345,7 +422,9 @@ export default function VoiceBotWidget({
         timestamp: new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }),
       };
       setMessages((prev) => [...prev, errorMsg]);
-      voiceEngine.speak(errorMsg.text);
+      try {
+        voiceEngine.speak(errorMsg.text);
+      } catch (errSpeak) {}
     } finally {
       setLoading(false);
     }
@@ -362,15 +441,17 @@ export default function VoiceBotWidget({
   const cleanSuggestList = () => {
     if (!activeProject) {
       return [
-        "Show RERA registration details",
-        "Compare Prestige Bengaluru vs DLF Gurugram",
-        "What are some ready-to-move projects in Thane Mumbai?",
+        "Take me to EMI calculator",
+        "Check Vastu Shastra compliance",
+        "View NRI FEMA Guide",
       ];
     }
     return [
       `What are the configurations for ${activeProject.name}?`,
-      `Is ${activeProject.name} completely RERA approved?`,
-      `Schedule a site visit for ${activeProject.name}.`,
+      `Is ${activeProject.name} RERA approved?`,
+      "Take me to EMI calculator",
+      "Check Vastu compliance score",
+      "View NRI FEMA guide",
     ];
   };
 
@@ -423,10 +504,10 @@ export default function VoiceBotWidget({
                   ? "bg-blue-600 text-white shadow-[0_0_10px_rgba(59,130,246,0.3)]"
                   : "text-[#555] hover:text-[#888]"
               }`}
-              title="Server-side Google Gemma 4 Model"
+              title="Server-side Google Gemma 4 E2B Enterprise Model"
             >
               <Server className="w-3 h-3" />
-              <span className="hidden sm:inline">GEMMA 4</span>
+              <span className="hidden sm:inline">GEMMA 4 E2B</span>
             </button>
             <button
               onClick={() => {
