@@ -88,9 +88,13 @@ export function analyzeLeadIntent(text: string): LeadIntentReport {
   // Implementing micro-targeted scoring multipliers based on linguistic specificity
   
   // A. VASTU HIERARCHICAL ANALYSIS
-  const vastuGeneral = ["vastu", "shastra", "facing", "direction", " शास्त्र", "वास्तु", "दिशा"];
-  const vastuCompass = ["east-facing", "east facing", "north facing", "north-facing", "north-east", "northeast", "e-facing", "ne-facing"];
-  const vastuMicroLayout = ["pooja", "agni", "kitchen", "south-west", "southwest", "master bedroom", "entrance door", "quadrant", "agni corner", "brahmasthan", "placement", "entrance gating"];
+  const vastuGeneral = ["vastu", "shastra", "facing", "direction", " शास्त्र", "वास्तु", "दिशा", "alignment", "alignments"];
+  const vastuCompass = ["east-facing", "east facing", "north facing", "north-facing", "north-east", "northeast", "e-facing", "ne-facing", "cardinal", "cardinal gate"];
+  const vastuMicroLayout = [
+    "pooja", "agni", "kitchen", "south-west", "southwest", "master bedroom", "entrance door", "quadrant", 
+    "agni corner", "brahmasthan", "placement", "entrance gating", "nairutya", "nairutya corner", "prana", 
+    "prana frequencies", "solar energy"
+  ];
 
   const matchesVastuGeneral = vastuGeneral.some(s => norm.includes(s));
   const matchesVastuCompass = vastuCompass.some(s => norm.includes(s));
@@ -110,8 +114,8 @@ export function analyzeLeadIntent(text: string): LeadIntentReport {
   }
 
   // B. NRI HIERARCHICAL ANALYSIS
-  const nriBasic = ["nri", "abroad", "foreign", "overseas", "non resident", "non-resident", "foreign citizen", "passport", "एनआरआई"];
-  const nriRemittance = ["remit", "remittance", "nre", "nro", "wire transfer", "outward remittance", "repatriate", "repatriation", "repatriable"];
+  const nriBasic = ["nri", "abroad", "foreign", "overseas", "non resident", "non-resident", "foreign citizen", "passport", "एनआरआई", "fema eligibility"];
+  const nriRemittance = ["remit", "remittance", "nre", "nro", "wire transfer", "outward remittance", "repatriate", "repatriation", "repatriable", "foreign remittance", "foreign remittances", "rental inflows"];
   const nriRegulatory = ["fema", "fema compliance", "double taxation", "dtaa", "tax exemption", "repatriation act", "rbi approval", "फेమా"];
 
   const matchesNriBasic = nriBasic.some(s => norm.includes(s));
@@ -131,7 +135,67 @@ export function analyzeLeadIntent(text: string): LeadIntentReport {
     triggers.push("NRI_REGULATORY_COMPLIANCE");
   }
 
-  // C. STANDARDS & TARGET OVERLAYS
+  // C. GRANULAR RAG KNOWLEDGE BASE SPECIFICITY ADDITIONS (Phrase-Weighting Logic)
+  // Highly micro-targeted weights based on exact matching of specialist Vastu terms
+  const vastuRAGPhrases = [
+    { phrase: "cardinal gate alignments", weight: 8 },
+    { phrase: "cardinal gate", weight: 6 },
+    { phrase: "kitchen alignments", weight: 8 },
+    { phrase: "master bedroom alignments", weight: 8 },
+    { phrase: "prana frequencies", weight: 6 },
+    { phrase: "positive prana", weight: 5 },
+    { phrase: "auspicious solar energy", weight: 8 },
+    { phrase: "agni fire corner", weight: 7 },
+    { phrase: "nairutya corner", weight: 7 },
+    { phrase: "nairutya", weight: 5 }
+  ];
+
+  // Highly micro-targeted weights based on exact matching of specialist NRI/FEMA/tax terms
+  const nriRAGPhrases = [
+    { phrase: "agricultural restrictions", weight: 8 },
+    { phrase: "capital repatriation", weight: 7 },
+    { phrase: "tax gains/tds", weight: 8 },
+    { phrase: "30% tds", weight: 6 },
+    { phrase: "fema eligibility", weight: 7 },
+    { phrase: "nri property buying guide", weight: 8 },
+    { phrase: "rules, taxes & faqs", weight: 6 },
+    { phrase: "fcnr", weight: 5 },
+    { phrase: "tax return", weight: 5 },
+    { phrase: "dtaa", weight: 5 },
+    { phrase: "global dtaa relief", weight: 8 },
+    { phrase: "foreign remittance", weight: 7 },
+    { phrase: "foreign remittances", weight: 7 },
+    { phrase: "flat properties", weight: 5 },
+    { phrase: "rental inflows", weight: 6 }
+  ];
+
+  let vastuSpecificWeight = 0;
+  const matchedVastuPhrases: string[] = [];
+  for (const item of vastuRAGPhrases) {
+    if (norm.includes(item.phrase)) {
+      vastuSpecificWeight += item.weight;
+      matchedVastuPhrases.push(item.phrase);
+    }
+  }
+  if (vastuSpecificWeight > 0) {
+    score += vastuSpecificWeight;
+    triggers.push(`VASTU_RAG_SPECIFIC_MATCH(${matchedVastuPhrases.join(", ")})`);
+  }
+
+  let nriSpecificWeight = 0;
+  const matchedNriPhrases: string[] = [];
+  for (const item of nriRAGPhrases) {
+    if (norm.includes(item.phrase)) {
+      nriSpecificWeight += item.weight;
+      matchedNriPhrases.push(item.phrase);
+    }
+  }
+  if (nriSpecificWeight > 0) {
+    score += nriSpecificWeight;
+    triggers.push(`NRI_RAG_SPECIFIC_MATCH(${matchedNriPhrases.join(", ")})`);
+  }
+
+  // D. STANDARDS & TARGET OVERLAYS
   const reraKeywords = [
     "rera", "approved", "registration", "p02400007821", "p51700021432", "license", "legal",
     "clearance", "government approval", "prm/ka/rera", "harera"

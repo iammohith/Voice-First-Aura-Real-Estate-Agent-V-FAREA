@@ -9,6 +9,7 @@ import VoiceBotWidget from "./components/VoiceBotWidget";
 import SiteVisitBooking from "./components/SiteVisitBooking";
 import LeadActivityMonitor from "./components/LeadActivityMonitor";
 import CfoVastuSuite from "./components/CfoVastuSuite";
+import HomeLoanCalculator from "./components/HomeLoanCalculator";
 import { Project } from "./types";
 import { SAMPLE_PROJECTS } from "./data";
 import { 
@@ -23,7 +24,8 @@ import {
   Building,
   Sparkles,
   Calculator,
-  Globe
+  Globe,
+  Coins
 } from "lucide-react";
 
 export default function App() {
@@ -34,7 +36,7 @@ export default function App() {
   const [timeStr, setTimeStr] = useState("");
   const [activeSuiteTab, setActiveSuiteTab] = useState<"finance" | "vastu" | "nri">("finance");
   const [nriStatus, setNriStatus] = useState<boolean>(false);
-  const [activeSuiteModal, setActiveSuiteModal] = useState<"finance" | "vastu" | "nri" | null>(null);
+  const [activeSuiteModal, setActiveSuiteModal] = useState<"finance" | "vastu" | "nri" | "loan_eligibility" | null>(null);
 
   useEffect(() => {
     const updateTime = () => {
@@ -171,8 +173,8 @@ export default function App() {
 
               {/* Direct interactive access to Enterprise Decision suite popups */}
               <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-[#1f1f23]/60 select-none text-xs">
-                <span className="text-[10.5px] font-mono font-bold text-blue-400 uppercase tracking-wide flex items-center gap-1.5 mr-1">
-                  Rapid Consultation Suites :
+                <span className="text-[10.5px] font-mono font-bold text-blue-400 uppercase tracking-wide flex items-center gap-1.5 mr-1 font-extrabold">
+                  Consultation Suites :
                 </span>
                 <div className="flex flex-wrap gap-2.5">
                   <button
@@ -181,10 +183,10 @@ export default function App() {
                       setActiveSuiteTab("finance");
                       setActiveSuiteModal("finance");
                     }}
-                    className="px-3.5 py-1.5 bg-blue-950/20 hover:bg-blue-600/20 text-blue-400 border border-blue-500/20 hover:border-blue-500/50 rounded font-semibold transition-all cursor-pointer flex items-center gap-1.5 hover:shadow-[0_0_10px_rgba(59,130,246,0.15)]"
+                    className="px-3 py-1.5 bg-blue-950/20 hover:bg-blue-600/20 text-blue-400 border border-blue-500/20 hover:border-blue-500/50 rounded font-semibold transition-all cursor-pointer flex items-center gap-1.5 hover:shadow-[0_0_10px_rgba(59,130,246,0.15)] font-mono text-[11px]"
                   >
                     <Calculator className="w-3.5 h-3.5" />
-                    EMI & Finance Planner
+                    EMI & Finance
                   </button>
                   <button
                     id="trigger-popup-vastu"
@@ -192,10 +194,10 @@ export default function App() {
                       setActiveSuiteTab("vastu");
                       setActiveSuiteModal("vastu");
                     }}
-                    className="px-3.5 py-1.5 bg-amber-950/20 hover:bg-amber-600/20 text-amber-400 border border-amber-500/20 hover:border-amber-500/50 rounded font-semibold transition-all cursor-pointer flex items-center gap-1.5 hover:shadow-[0_0_10px_rgba(245,158,11,0.15)]"
+                    className="px-3 py-1.5 bg-amber-950/20 hover:bg-amber-600/20 text-amber-400 border border-amber-500/20 hover:border-amber-500/50 rounded font-semibold transition-all cursor-pointer flex items-center gap-1.5 hover:shadow-[0_0_10px_rgba(245,158,11,0.15)] font-mono text-[11px]"
                   >
                     <Compass className="w-3.5 h-3.5" />
-                    Vastu Shastra Compliance
+                    Vastu Shastra
                   </button>
                   <button
                     id="trigger-popup-nri"
@@ -204,10 +206,20 @@ export default function App() {
                       setNriStatus(true);
                       setActiveSuiteModal("nri");
                     }}
-                    className="px-3.5 py-1.5 bg-emerald-950/20 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/50 rounded font-semibold transition-all cursor-pointer flex items-center gap-1.5 hover:shadow-[0_0_10px_rgba(16,185,129,0.15)]"
+                    className="px-3 py-1.5 bg-emerald-950/20 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-500/20 hover:border-emerald-500/50 rounded font-semibold transition-all cursor-pointer flex items-center gap-1.5 hover:shadow-[0_0_10px_rgba(16,185,129,0.15)] font-mono text-[11px]"
                   >
                     <Globe className="w-3.5 h-3.5" />
-                    NRI FEMA Desk
+                    NRI FEMA Guide
+                  </button>
+                  <button
+                    id="trigger-popup-loan"
+                    onClick={() => {
+                      setActiveSuiteModal("loan_eligibility");
+                    }}
+                    className="px-3 py-1.5 bg-sky-950/20 hover:bg-sky-600/20 text-sky-400 border border-sky-500/20 hover:border-sky-500/50 rounded font-semibold transition-all cursor-pointer flex items-center gap-1.5 hover:shadow-[0_0_10px_rgba(14,165,233,0.15)] font-mono text-[11px] font-bold"
+                  >
+                    <Coins className="w-3.5 h-3.5 text-emerald-400" />
+                    Loan Eligibility Calculator
                   </button>
                 </div>
               </div>
@@ -250,10 +262,12 @@ export default function App() {
                 setActiveSuiteTab("nri");
                 setNriStatus(true);
                 setActiveSuiteModal("nri");
+              } else if (action === "loan_eligibility") {
+                setActiveSuiteModal("loan_eligibility");
               }
               // Wait for render cycle, then scroll cleanly
               setTimeout(() => {
-                const el = document.getElementById("cfo-vastu-suite-dashboard");
+                const el = document.getElementById("cfo-vastu-suite-dashboard") || document.getElementById("loan-eligibility-calculator-view");
                 if (el) {
                   el.scrollIntoView({ behavior: "smooth", block: "center" });
                 }
@@ -295,13 +309,13 @@ export default function App() {
         </div>
       )}
 
-      {/* CFO / VASTU / NRI SUITE MODAL POPUP */}
+      {/* CFO / VASTU / NRI / LOAN ELIGIBILITY SUITE MODAL POPUP */}
       {activeSuiteModal && (
         <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="relative w-full max-w-5xl bg-[#0b0c10] border border-slate-850 rounded-2xl p-6 shadow-2xl animate-fade-in max-h-[90vh] overflow-y-auto">
+          <div className="relative w-full max-w-5xl bg-[#0b0c10] border border-slate-850 rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 shadow-2xl animate-fade-in max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setActiveSuiteModal(null)}
-              className="absolute right-6 top-6 p-1.5 bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-slate-200 rounded-lg border border-slate-800 hover:border-slate-750 transition-colors z-10 cursor-pointer"
+              className="absolute right-4 top-4 sm:right-6 sm:top-6 p-1.5 bg-slate-900/80 hover:bg-slate-800 text-slate-400 hover:text-slate-200 rounded-lg border border-slate-800 hover:border-slate-750 transition-colors z-10 cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -313,24 +327,40 @@ export default function App() {
               <h2 className="text-2xl font-bold font-sans text-white mt-2 flex items-center gap-2">
                 <span>Enterprise Decision Suite</span>
                 <span className="text-slate-500 font-normal">/</span> 
-                <span className="text-amber-500">
-                  {activeSuiteModal === "finance" ? "EMI & CFO Planner" : activeSuiteModal === "vastu" ? "Vastu Direction Compliance" : "NRI Compliance Desk"}
+                <span className="text-amber-500 font-bold uppercase">
+                  {activeSuiteModal === "finance" 
+                    ? "EMI & CFO Planner" 
+                    : activeSuiteModal === "vastu" 
+                    ? "Vastu Direction Compliance" 
+                    : activeSuiteModal === "nri"
+                    ? "NRI Compliance Desk"
+                    : "Home Loan Underwriter Eligibility Assessment"}
                 </span>
               </h2>
               <p className="text-sm text-slate-400 mt-1 max-w-2xl">
-                Loaded with real-time financial, vastu-spatial patterns, and FEMA legal directives for <strong className="text-slate-300 font-semibold">{selectedProject.name}</strong>. Adjust values below.
+                {activeSuiteModal === "loan_eligibility" 
+                  ? "Real-time client income, FOIR capacity and credit underwriting check variables."
+                  : `Loaded with real-time financial, vastu-spatial patterns, and FEMA legal directives for ${selectedProject?.name}. Adjust values below.`}
               </p>
             </div>
-            <CfoVastuSuite 
-              selectedProject={selectedProject} 
-              activeTab={activeSuiteModal}
-              onTabChange={(tab) => {
-                setActiveSuiteModal(tab);
-                setActiveSuiteTab(tab);
-              }}
-              nriStatus={nriStatus}
-              onNriStatusChange={(status) => setNriStatus(status)}
-            />
+            
+            {activeSuiteModal === "loan_eligibility" ? (
+              <HomeLoanCalculator 
+                selectedProject={selectedProject} 
+                onClose={() => setActiveSuiteModal(null)} 
+              />
+            ) : (
+              <CfoVastuSuite 
+                selectedProject={selectedProject} 
+                activeTab={activeSuiteModal}
+                onTabChange={(tab) => {
+                  setActiveSuiteModal(tab);
+                  setActiveSuiteTab(tab);
+                }}
+                nriStatus={nriStatus}
+                onNriStatusChange={(status) => setNriStatus(status)}
+              />
+            )}
           </div>
         </div>
       )}
@@ -338,7 +368,7 @@ export default function App() {
       {/* RERA CHEATSHEET ACCORDION FAQ MODAL */}
       {showFaqModal && (
         <div className="fixed inset-0 bg-[#050506]/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-[#0a0a0c] border border-[#1f1f23] max-w-lg w-full rounded-xl p-6 shadow-2xl relative select-none animate-fade-in max-h-[85vh] overflow-y-auto">
+          <div className="bg-[#0a0a0c] border border-[#1f1f23] max-w-lg w-full rounded-xl p-4 sm:p-6 shadow-2xl relative select-none animate-fade-in max-h-[85vh] overflow-y-auto">
             <button
               onClick={() => setShowFaqModal(false)}
               className="absolute right-4 top-4 p-1.5 bg-[#050506] border border-[#1f1f23] text-slate-400 hover:text-[#fff] rounded hover:border-blue-500/50 transition-colors cursor-pointer"

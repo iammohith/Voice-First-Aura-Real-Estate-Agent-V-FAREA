@@ -84,7 +84,7 @@ export default function SiteVisitBooking({ project, onSuccess, onCancel }: SiteV
   }
 
   return (
-    <div className="bg-[#0a0a0c] border border-[#1f1f23] rounded-xl p-6 shadow-2xl w-full max-w-md mx-auto relative overflow-hidden">
+    <div className="bg-[#0a0a0c] border border-[#1f1f23] rounded-xl p-4 sm:p-6 shadow-2xl w-full max-w-md mx-auto relative overflow-hidden">
       <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-blue-600 to-transparent shadow-[0_1px_8px_#3b82f6]"></div>
       <div className="mb-4">
         <span className="text-[10px] font-mono font-bold text-blue-400 uppercase tracking-widest block font-bold">VIP_PRE_SALES_PORTAL // SECURE_CON</span>
@@ -97,7 +97,7 @@ export default function SiteVisitBooking({ project, onSuccess, onCancel }: SiteV
         <div className="space-y-1">
           <label className="text-[11px] font-mono font-bold text-[#888] block uppercase">Full Name *</label>
           <div className="relative">
-            <User className="w-4 h-4 text-[#555] absolute left-3 top-3.5" />
+            <User className="w-4 h-4 text-[#555] absolute left-3 top-3.5 pointer-events-none" />
             <input
               type="text"
               required
@@ -114,7 +114,7 @@ export default function SiteVisitBooking({ project, onSuccess, onCancel }: SiteV
           <div className="space-y-1">
             <label className="text-[11px] font-mono font-bold text-[#888] block uppercase">Mobile No. *</label>
             <div className="relative">
-              <Phone className="w-4 h-4 text-[#555] absolute left-3 top-3.5" />
+              <Phone className="w-4 h-4 text-[#555] absolute left-3 top-3.5 pointer-events-none" />
               <input
                 type="tel"
                 required
@@ -129,7 +129,7 @@ export default function SiteVisitBooking({ project, onSuccess, onCancel }: SiteV
           <div className="space-y-1">
             <label className="text-[11px] font-mono font-bold text-[#888] block uppercase">Email Address</label>
             <div className="relative">
-              <Mail className="w-4 h-4 text-[#555] absolute left-3 top-3.5" />
+              <Mail className="w-4 h-4 text-[#555] absolute left-3 top-3.5 pointer-events-none" />
               <input
                 type="email"
                 placeholder="e.g. anand@outlook.in"
@@ -142,17 +142,27 @@ export default function SiteVisitBooking({ project, onSuccess, onCancel }: SiteV
         </div>
 
         {/* Date and Time slots */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-1">
             <label className="text-[11px] font-mono font-bold text-[#888] block uppercase">Select Date *</label>
             <div className="relative">
-              <Calendar className="w-4 h-4 text-[#555] absolute left-3 top-3" />
+              <Calendar className="w-4 h-4 text-[#555] absolute left-3 top-3 pointer-events-none" />
               <input
                 type="date"
                 required
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full bg-[#050506] border border-[#1f1f23] focus:border-blue-500/50 rounded py-2 pl-10 pr-3 text-xs text-slate-100 outline-none transition-colors"
+                onClick={(e) => {
+                  try {
+                    (e.target as any).showPicker();
+                  } catch (err) {}
+                }}
+                onFocus={(e) => {
+                  try {
+                    (e.target as any).showPicker();
+                  } catch (err) {}
+                }}
+                className="w-full bg-[#050506] border border-[#1f1f23] focus:border-blue-500/50 rounded py-2 pl-10 pr-3 text-xs text-slate-100 outline-none transition-colors cursor-pointer"
               />
             </div>
           </div>
@@ -160,12 +170,12 @@ export default function SiteVisitBooking({ project, onSuccess, onCancel }: SiteV
           <div className="space-y-1">
             <label className="text-[11px] font-mono font-bold text-[#888] block uppercase">Preferred Time *</label>
             <div className="relative">
-              <Clock className="w-4 h-4 text-[#555] absolute left-3 top-3.5" />
+              <Clock className="w-4 h-4 text-[#555] absolute left-3 top-3.5 pointer-events-none" />
               <select
                 required
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                className="w-full bg-[#050506] border border-[#1f1f23] focus:border-blue-500/50 rounded py-2.5 pl-10 pr-4 text-xs text-slate-100 outline-none transition-colors"
+                className="w-full bg-[#050506] border border-[#1f1f23] focus:border-blue-500/50 rounded py-2.5 pl-10 pr-4 text-xs text-slate-100 outline-none transition-colors cursor-pointer"
               >
                 <option value="">Choose Slot</option>
                 <option value="10:00 AM - 12:00 PM">Morning (10AM - 12PM)</option>

@@ -409,7 +409,7 @@ export const RAG_DATA_CHUNKS: RAGChunk[] = [
     keywords: ["nri", "fema", "repatriation", "repatriable", "nre", "nro", "foreign", "abroad", "account", "banking", "overseas", "dtaa", "tax"]
   },
 
-  // General Real Estate Glossary Chunks
+  // General Real Estate glossary
   {
     projectId: "general",
     projectName: "RERA and Areas",
@@ -538,30 +538,148 @@ export const RAG_DATA_CHUNKS: RAGChunk[] = [
     category: "general",
     text: "Advanced Home Finance Schemes and EMI/Pre-EMI Modes:\n- Subvention Scheme: Bank-builder contractual scheme where the builder pays interest during construction. The home buyer pays zero EMIs until taking possession, resolving dual-paying pressures (rent + EMI).\n- Pre-EMI: Buyer pays a lower 'interest-only' payment on partially disbursed loan sums during construction. Standard Full EMI starts after possession, covering both interest and principal reduction. Banks like SBI, HDFC, ICICI, Axis, and LIC offer designated subventions on RERA projects.",
     keywords: ["subvention", "pre-emi", "emi", "interest-only", "builder-subvented", "home loan"]
+  },
+
+  // --- USER SPECIFIED KNOWLEDGE DESK GUIDES ---
+  {
+    projectId: "general",
+    projectName: "EMI & Finance",
+    category: "general",
+    text: "EMI & Finance Guide:\n- Debt Underwriting: Fixed Obligation to Income Ratio (FOIR Ratios) specifies that all monthly EMI obligations (including the new home loan) should not cross 40% to 50% of your household's net disposable monthly salary.\n- Down Payments: Under RERA rules, a standard booking token is 10% of total cost, while developers usually require 10% to 20% down payments as buyer equity, with bank programs funding the remaining 80% core asset value.\n- Financial Advice: Maintain a healthy CIBIL score (750+) before initiating home loan pre-approvals to qualify for direct processing waivers.",
+    keywords: ["emi & finance", "foir ratios", "down payments", "foir", "down payment", "finance", "calculation"]
+  },
+  {
+    projectId: "general",
+    projectName: "Vastu Shastra",
+    category: "general",
+    text: "Vastu Shastra Spatial Compliance Guide:\n- Cardinal Gate Alignments: The main entrance/cardinal gate should exclusively face East, North, or North-East to channel auspicious solar energy and positive Prana frequencies.\n- Kitchen Alignments: Always align the kitchen in the South-East quadrant (Agni fire corner). Avoid placing kitchens directly in the North-East.\n- Master Bedroom Alignments: Position the master bedroom strictly in the South-West quadrant (Nairutya corner) to facilitate familial stability, security, power, and prosperity.",
+    keywords: ["vastu shastra", "vastu", "shastra", "cardinal gate", "kitchen", "master bedroom alignments"]
+  },
+  {
+    projectId: "general",
+    projectName: "NRI FEMA Guide",
+    category: "general",
+    text: "NRI FEMA Regulatory Desk Guidance:\n- FEMA Eligibility: NRIs, PIOs, and OCIs hold general permission to purchase residential or commercial real estate in India using standard banking channels.\n- Agricultural Restrictions: FEMA rules strictly enforce agricultural restrictions, preventing NRIs and foreign passport holders from buying agricultural lands, plantations, or farmhouses unless acquired through legal inheritance.\n- Capital Repatriation & Taxes: Capital repatriation of original investment sale proceeds can be routed abroad for up to two residential flat properties. Rental inflows are subject to standard 30% TDS, fully repatriable after normal income tax return filings under dual tax (DTAA) treaties, adjusting overall tax gains/TDS.",
+    keywords: ["nri fema guide", "nri", "fema", "agricultural restrictions", "capital repatriation", "tax gains/tds"]
+  },
+  {
+    projectId: "general",
+    projectName: "NRI Property Buying Guide – Rules, Taxes & FAQs",
+    category: "general",
+    text: "NRI Property Buying Guide – Rules, Taxes & FAQs:\n- Rules & FEMA: Under standard FEMA rules, foreign remittances via NRE, NRO, or FCNR are fully accepted. Direct cash payments are strongly forbidden.\n- Agricultural Restrictions: NRIs have zero authorization to acquire farm lands or plantations. Only inheritance transfers are valid under agricultural restrictions.\n- Taxes & Repatriation: Capital repatriation is permitted back overseas for up to two flats. Any rental earnings are subject to 30% TDS, but tax gains/TDS can be optimized via global DTAA relief protocols after tax return submissions.",
+    keywords: ["nri property buying guide", "rules", "taxes", "faqs", "agricultural restrictions", "capital repatriation", "tax gains/tds", "nri property buying guide – rules, taxes & faqs"]
+  },
+  {
+    projectId: "general",
+    projectName: "Choosing the Right Property – A Complete Guide",
+    category: "general",
+    text: "Choosing the Right Property – A Complete Guide:\n- Transit Coordinates: Carefully analyze transit coordinates, including travel times to work hubs, local metro lanes, suburban highways, and airport accessibility limits.\n- Configuration Choices: Configuration choices (such as 2 BHK vs 3 BHK configurations) should align with future family expansion, offering better resale value and rental yields.\n- Green Space Densities: Opt for properties guaranteeing 70% to 80% open spaces, providing massive green space densities, modern landscaped play fields, senior nature walking trails, and EV charge setups.",
+    keywords: ["choosing the right property", "complete guide", "transit coordinates", "configuration choices", "green space densities", "choosing the right property – a complete guide"]
+  },
+  {
+    projectId: "general",
+    projectName: "Construction Quality in Real Estate – A Complete Buyer's Guide",
+    category: "general",
+    text: "Construction Quality in Real Estate – A Complete Buyer's Guide:\n- Advanced Formwork: Insist on projects using monolithic Mivan aluminum formwork (rather than standard brick mortar jointing) to provide seamless, durable concrete structures and prevent damp cracks.\n- Hard Evidence: Audit independent third-party soil check analyses and official seismic ratings (earthquake resistance designs).\n- Material Standards: Verify use of high-strength Fe 500 steel (rust-resistant grade) and premium grade cement.\n- Civil Inspections: Perform rigorous civil inspections on-site, measuring paint plaster symmetry, joint tiling alignment, structural pillars, and check for outline leakage signs under balcony doors.",
+    keywords: ["construction quality in real estate", "complete buyer's guide", "mivan aluminum formwork", "seismic ratings", "fe 500 steel", "civil inspections", "construction quality in real estate – a complete buyer's guide"]
+  },
+  {
+    projectId: "general",
+    projectName: "Property Pricing Guide – Cost Breakup, Taxes & Hidden Charges",
+    category: "general",
+    text: "Property Pricing Guide – Cost Breakup, Taxes & Hidden Charges:\n- Extra charges: Total transaction costs include Floor Rise charges (added per floor in high-rises), Preferential Location Charges [PLC] for park/lake views, clubhouse enrollment fee, and parking slot assignments.\n- Statutory Dues: Fact-check statutory rates: stamp duties (5-7% of property cost depending on state location), sub-registrar registration fees (1%), and GST (5% for under-construction homes).\n- Upkeep Assets: Budget for the physical corpus fund deposit (security capital buffer) and advance building maintenance funds to settle long-term community service bills.",
+    keywords: ["property pricing guide", "cost breakup", "taxes", "hidden charges", "floor rise", "preferential location charges", "stamp duties", "building maintenance funds", "property pricing guide – cost breakup, taxes & hidden charges"]
+  },
+  {
+    projectId: "general",
+    projectName: "Home Booking & Registration Guide – Documents, RERA Rules & Buyer Rights",
+    category: "general",
+    text: "Home Booking & Registration Guide – Documents, RERA Rules & Buyer Rights:\n- Documents Checklist: Inspect the official Commencement Certificate [CC], municipal approved layout blueprints, Kaveri/Dharani Online title encumbrances, the registered physical Sale Deed, and get a copy of the final Occupancy Certificate [OC].\n- Financial Mandates: Escrow compliance requires developers to keep 70% of buyer collections in a dedicated local account to protect progress.\n- Buyer Rights: Under RERA Section 14(3), the developer is legally bound to 5-year structural defect liabilities post possession, requiring them to repair structural or workmanship flaws for free.",
+    keywords: ["home booking & registration guide", "documents", "rera rules", "buyer rights", "commencement certificate", "occupancy certificate", "encumbrances", "escrow compliance", "5-year structural defect liabilities", "home booking & registration guide – documents, rera rules & buyer rights"]
+  },
+  {
+    projectId: "general",
+    projectName: "Complete Home Loan Guide – Eligibility, EMI, Subvention & Tax Benefits",
+    category: "general",
+    text: "Complete Home Loan Guide – Eligibility, EMI, Subvention & Tax Benefits:\n- Debt Underwriting: Banks use Fixed Obligation to Income Ratio (FOIR) models to limit loan limits, meaning EMIs must rank under 45% to 55% of take-home salary.\n- Bureau check: A stellar CIBIL rating of 750+ secures lower mortgage margins and fast pre-approvals.\n- Funding structures: Subvention structures let developers pay loan interest during building milestones (saving rent+EMI stress). Pre-EMI accounts for interest-only sums during building phases, while full EMI starts post-possession.\n- Tax Benefits: Section 80C & Section 24(b) joint deductions let you save up to ₹1.5 Lakhs (principal) and ₹2 Lakhs (interest) annually, which are doubled if co-borrowing spouses register jointly under banks or bank programs.",
+    keywords: ["complete home loan guide", "eligibility", "emi", "subvention", "tax benefits", "section 80c & section 24(b) joint deductions", "subvention structures", "bank programs", "complete home loan guide – eligibility, emi, subvention & tax benefits"]
+  },
+  {
+    projectId: "general",
+    projectName: "Mortgage Underwriting & FOIR Thresholds",
+    category: "general",
+    text: "Mortgage Underwriting & FOIR Thresholds:\n- FOIR Caps: Banks restrict total monthly obligations (new EMI + existing EMIs) using the Fixed Obligation to Income Ratio (FOIR). For net income under ₹50k, FOIR is capped at 50%. For net income between ₹50k and ₹1 Lakh, FOIR is capped at 50%. For net income between ₹1 Lakh and ₹2 Lakhs, the ceiling is 55%, and for high-earning individuals with over ₹2 Lakhs monthly income, the FOIR ceiling increases to 60%, allowing higher debt leverage.\n- Net EMI Capacity: The net monthly budget for a new EMI is calculated as: Gross Monthly Salary multiplied by FOIR Percentage, minus existing active monthly liabilities.",
+    keywords: ["foir", "foir thresholds", "debt underwriting", "debt limit", "income ratio", "underwriting limit", "borrowing capacity"]
+  },
+  {
+    projectId: "general",
+    projectName: "CIBIL Bureau Ratings & Interest ROI Adjustments",
+    category: "general",
+    text: "CIBIL Bureau Ratings & Interest ROI Adjustments:\n- Super Prime Elite (Score >= 800): Qualifies for a rate discount of -20 basis points (-0.20% APR discount) on standard prime home loans and a 10% eligibility booster (1.10x multiplier) on maximum borrowing capacity.\n- Standard Prime (Score 750 to 799): Standard prime ROI applies (no premium or discount); full standard prime borrowing capacity (1.00x multiplier).\n- Marginal Prime (Score 700 to 749): Subject to a risk premium of +25 basis points (+0.25% APR premium) and a 10% safety haircut (0.90x multiplier) on dynamic loan eligibility.\n- Subprime Tier-2 (Score 650 to 699): Premium surcharge of +65 basis points (+0.65% APR premium) and a 30% safety haircut (0.70x multiplier) on borrowing size capacity.\n- Rejection Threshold: Any credit score under 650 is immediately declined by Tier-1 institutions and credit underwriters, disqualifying the applicant from standard home loan programs.",
+    keywords: ["cibil", "cibil score", "credit score", "interest rate", "rate discount", "haircut", "booster", "multiplier", "rejection", "subprime", "prime rate"]
+  },
+  {
+    projectId: "general",
+    projectName: "Loan-To-Value (LTV) Downpayment Formula",
+    category: "general",
+    text: "Loan-To-Value (LTV) Downpayment Formula:\n- Standard Quota: Tier-1 lenders enforce an 80% Loan-To-Value (LTV) standard funding limit on residential real estate purchases. This triggers a base required downpayment of 20% on the property price.\n- Capacity Ceiling Cap: If the standard 80% LTV requested loan amount exceeds the applicant's maximum underwritten loan capacity (governed by FOIR and CIBIL outputs), the actual approved loan is capped at that ceiling limit. This requires the buyer to bridge the gap with an additional downpayment cash buffer in order to secure the home purchase.",
+    keywords: ["ltv", "downpayment", "loan-to-value", "required downpayment", "cash buffer", "funding limit", "approved loan"]
+  },
+  {
+    projectId: "prestige-solitaire",
+    projectName: "Prestige Solitaire",
+    category: "pricing",
+    text: "Prestige Solitaire Approved Lenders & Loan Eligibility Details:\n- Principal Banks Approved: State Bank of India (SBI), HDFC Bank, ICICI Bank, Axis Bank, and LIC Housing Finance are fully tied up as official pre-approved partners.\n- Fast-track approvals: The project has a pre-approved RERA file status with national banks, reducing mortgage processing times to under 5-7 business days.\n- Standard Terms: Buyers with a CIBIL score of 750+ can qualify for a standard Loan-To-Value (LTV) of up to 80% with zero processing fees. Spouses of dual income can apply for joint loans under Section 80C and Section 24b of IT Act, which doubles standard loan eligibility thresholds up to 55% to 60% FOIR ceiling allocations.",
+    keywords: ["loan", "eligibility", "loan eligibility", "bank approval", "sbi", "hdfc", "prestige solitaire bank partners", "pre-approval", "co-borrower"]
+  },
+  {
+    projectId: "dlf-horizon",
+    projectName: "DLF Horizon Residences",
+    category: "pricing",
+    text: "DLF Horizon Approved Lenders & Luxury Home Loan Eligibility Details:\n- Elite Bank Partners: Approved by HDFC Wealth Mortgages, SBI Retail Commercial, ICICI Wealth branch, Axis Wealth, and Standard Chartered.\n- Underwriting Criteria: Because it is a high-ticket luxury project, lenders strictly require a credit score of 750+ for prime rates. If CIBIL score is Super Prime >= 800, buyers unlock a premium -20 bps (0.20% APR discount) ROI discount and 1.10x borrowing capacity multiplier.\n- Loan-To-Value limits: Standard LTV is strictly 80% of registry value. Any valuation gap or preferential charges must be financed via downpayment cash resources. High-net-worth individuals can register joint applications, leveraging a maximum 60% FOIR ceiling allocation.",
+    keywords: ["loan", "eligibility", "luxury loan", "bank approval", "cibil discount", "hdfc wealth", "sbi commercial", "hni mortgage"]
+  },
+  {
+    projectId: "lodha-marina",
+    projectName: "Lodha Splendora Marina",
+    category: "pricing",
+    text: "Lodha Splendora Marina Approved Lenders & Ready Possession Mortgage Eligibility Details:\n- Registered Lending Houses: ICICI Bank, State Bank of India (SBI), HDFC Bank, Axis Bank, Kotak Mahindra, and Union Bank.\n- Immediate funding advantages: Since Lodha Splendora Marina is completely Ready-To-Move-In with active Occupancy Certificates, buyers enjoy 0% GST (Zero GST). This increases overall borrowing efficiency and loan security since there is zero under-construction risk.\n- Ready Disbursal timelines: Sanction to disbursal takes only 3 to 5 business days since physical title checking is pre-vetted. Up to 80% LTV of agreement value is fully covered by SBI/ICICI programs for standard prime applicants.",
+    keywords: ["loan", "ready possession loan", "bank approval", "gst saving", "disbursal timeline", "oc available", "icici mortgage", "sbi home loan"]
+  },
+  {
+    projectId: "myhome-legend",
+    projectName: "My Home Legend",
+    category: "pricing",
+    text: "My Home Legend Approved Lenders & Under-Construction Mortgage Eligibility Details:\n- Primary Bank Tie-ups: SBI Retail, HDFC Capital, ICICI Elite Mortgage, Union Bank of India, and Canara Bank.\n- Special subvention structures: Pre-approved for flexible 10:90 bank programs. Under builder subvention facilities, the builder handles mortgage interest payments until the possession date in March 2029, alleviating dual pressure of current rent and home loan EMIs.\n- Enhanced Joint Capability: Co-borrowing with a spouse enables a combined 60% FOIR cap and double tax deductions, maximizing borrowing boundaries for luxury sky villas starting from 2.90 Crores.",
+    keywords: ["loan", "eligibility", "subvention program", "10:90 plan", "co-borrowing", "hyderabad sbi loan", "my home legend bank approvals"]
   }
 ];
 
 /**
- * Searches property database chunks for match similarity (Edge RAG / Local Grounding).
- * A perfect, lightweight, free keyword scoring similarity algorithm.
+ * Searches property database chunks using highly precise TF-IDF and Cosine Similarity (Edge RAG / Local Grounding).
+ * Always prioritizes project-specific assets over general knowledge based on query alignment.
  */
-export function retrieveContext(query: string, projectId?: string): string[] {
+export function retrieveContextLexical(query: string, projectId?: string): string[] {
   const normalizedQuery = query.toLowerCase();
-  
-  // Filter by projectId first if specified, but if the user query explicitly mentions
-  // key terms of another project or compares them, bypass strict filtering so comparative context is matched.
+
+  // Basic filtering candidates: filter out other projects to avoid cross-contamination
   let candidates = RAG_DATA_CHUNKS;
   if (projectId) {
-    const queryLower = normalizedQuery;
     const mentionsOtherProject = RAG_DATA_CHUNKS.some(chunk => 
       chunk.projectId !== projectId && 
       chunk.projectId !== "general" && 
-      (queryLower.includes(chunk.projectName.toLowerCase()) || 
-       queryLower.includes(chunk.projectId.toLowerCase()) || 
-       (chunk.projectId === "prestige" && queryLower.includes("solitaire")) ||
-       (chunk.projectId === "dlf" && (queryLower.includes("horizon") || queryLower.includes("sector 65") || queryLower.includes("sector-65"))) ||
-       (chunk.projectId === "lodha" && (queryLower.includes("splendora") || queryLower.includes("marina") || queryLower.includes("thane"))) ||
-       (chunk.projectId === "myhome" && (queryLower.includes("legend") || queryLower.includes("kokapet") || queryLower.includes("hyderabad"))))
+      (normalizedQuery.includes(chunk.projectName.toLowerCase()) || 
+       normalizedQuery.includes(chunk.projectId.toLowerCase()) || 
+       normalizedQuery.includes("solitaire") || 
+       normalizedQuery.includes("prestige") || 
+       normalizedQuery.includes("horizon") || 
+       normalizedQuery.includes("dlf") || 
+       normalizedQuery.includes("splendora") || 
+       normalizedQuery.includes("marina") || 
+       normalizedQuery.includes("lodha") || 
+       normalizedQuery.includes("legend") || 
+       normalizedQuery.includes("my home") || 
+       normalizedQuery.includes("myhome"))
     );
     
     if (!mentionsOtherProject) {
@@ -569,39 +687,247 @@ export function retrieveContext(query: string, projectId?: string): string[] {
     }
   }
 
-  // Score candidate chunks based on matching tokens/keywords
-  const matches = candidates.map(chunk => {
-    let score = 0;
-    
-    // Exact phrase match addition
-    if (normalizedQuery.includes(chunk.projectName.toLowerCase())) {
-      score += 5;
+  // Tokenization helper with list of common English stop words
+  const STOP_WORDS = new Set([
+    "the", "and", "a", "of", "to", "in", "is", "for", "on", "with", "at", "by", "an", "this", "it", "from", 
+    "that", "as", "are", "be", "or", "your", "our", "us", "about", "how", "what", "where", "who", "which",
+    "can", "will", "would", "should", "could", "all", "any", "no", "not", "some", "other"
+  ]);
+
+  function tokenize(text: string): string[] {
+    return text
+      .toLowerCase()
+      .split(/[^a-zA-Z0-9\-\u0c00-\u0c7f\u0900-\u097f]/) // Support English and Indian regional characters
+      .map(t => t.trim())
+      .filter(t => t.length > 1 && !STOP_WORDS.has(t));
+  }
+
+  // Segment query tokens
+  const queryTokens = tokenize(query);
+  if (queryTokens.length === 0) {
+    // Standard default selection if query resolves entirely to stop words
+    if (projectId) {
+      return RAG_DATA_CHUNKS.filter(c => c.projectId === projectId).slice(0, 3).map(c => c.text);
     }
+    return [];
+  }
+
+  // Corpora size constant
+  const N = RAG_DATA_CHUNKS.length;
+
+  // 1. Build Document Frequency map across all corpus documents
+  const dfMap: Record<string, number> = {};
+  RAG_DATA_CHUNKS.forEach(chunk => {
+    const uniqueTokens = new Set<string>();
     
-    // Keyword match addition
-    chunk.keywords.forEach(keyword => {
-      if (normalizedQuery.includes(keyword)) {
-        score += 2;
-      }
+    // Process text
+    tokenize(chunk.text).forEach(t => uniqueTokens.add(t));
+    // Process keywords
+    chunk.keywords.forEach(kw => {
+      tokenize(kw).forEach(t => uniqueTokens.add(t));
     });
+    // Process title name
+    tokenize(chunk.projectName).forEach(t => uniqueTokens.add(t));
 
-    // Content substring match addition
-    if (normalizedQuery.length > 5) {
-      const words = normalizedQuery.split(/\s+/);
-      words.forEach(word => {
-        if (word.length > 3 && chunk.text.toLowerCase().includes(word)) {
-          score += 1;
-        }
-      });
-    }
-
-    return { chunk, score };
+    uniqueTokens.forEach(t => {
+      dfMap[t] = (dfMap[t] || 0) + 1;
+    });
   });
 
-  // Sort by highest score first and return top 3 chunks with score > 0
-  return matches
-    .filter(match => match.score > 0)
-    .sort((a, b) => b.score - a.score)
-    .map(match => match.chunk.text)
-    .slice(0, 3);
+  // 2. Pre-generate Inverse Document Frequency (IDF) weights for query tokens
+  const idfMap: Record<string, number> = {};
+  queryTokens.forEach(token => {
+    const df = dfMap[token] || 0;
+    idfMap[token] = Math.log(1 + N / (1 + df));
+  });
+
+  // 3. Compute Cosine Similarity scores over all compatible candidates
+  const scoredCandidates = candidates.map(chunk => {
+    const chunkTf: Record<string, number> = {};
+    
+    // Add text tokens (std weight = 1.0)
+    tokenize(chunk.text).forEach(t => {
+      chunkTf[t] = (chunkTf[t] || 0) + 1.0;
+    });
+
+    // Add keywords (boosted weight = 5.0 for high matching precision)
+    chunk.keywords.forEach(kw => {
+      tokenize(kw).forEach(t => {
+        chunkTf[t] = (chunkTf[t] || 0) + 5.0;
+      });
+    });
+
+    // Add project/manual title name (extremely high weight = 8.0)
+    tokenize(chunk.projectName).forEach(t => {
+      chunkTf[t] = (chunkTf[t] || 0) + 8.0;
+    });
+
+    // Query TF calculation
+    const queryTf: Record<string, number> = {};
+    queryTokens.forEach(t => {
+      queryTf[t] = (queryTf[t] || 0) + 1.0;
+    });
+
+    // Cosine similarity computation
+    let dotProduct = 0;
+    let queryNormSq = 0;
+    let docNormSq = 0;
+
+    const uniqueQueryTokens = Array.from(new Set(queryTokens));
+    uniqueQueryTokens.forEach(token => {
+      const idf = idfMap[token] || 1.0;
+      const qWeight = queryTf[token] * idf;
+      const dWeight = (chunkTf[token] || 0) * idf;
+
+      dotProduct += qWeight * dWeight;
+      queryNormSq += qWeight * qWeight;
+    });
+
+    // Calculate document magnitude
+    const allDocTokens = Object.keys(chunkTf);
+    allDocTokens.forEach(token => {
+      const df = dfMap[token] || 0;
+      const idf = Math.log(1 + N / (1 + df));
+      const dWeight = chunkTf[token] * idf;
+      docNormSq += dWeight * dWeight;
+    });
+
+    const queryNorm = Math.sqrt(queryNormSq);
+    const docNorm = Math.sqrt(docNormSq);
+
+    let similarity = 0;
+    if (queryNorm > 0 && docNorm > 0) {
+      similarity = dotProduct / (queryNorm * docNorm);
+    }
+
+    // --- STRATEGIC BOOSTING LAYERS ---
+    let finalScore = similarity;
+
+    // Detect if query is explicitly searching for general glossary/guide topics
+    const isVastuQuery = normalizedQuery.includes("vastu") || normalizedQuery.includes("shastra") || normalizedQuery.includes("gate") || normalizedQuery.includes("cardinal") || normalizedQuery.includes("kitchen") || normalizedQuery.includes("bedroom") || normalizedQuery.includes("alignment") || normalizedQuery.includes("facing") || normalizedQuery.includes("agni") || normalizedQuery.includes("nairutya") || normalizedQuery.includes("brahmasthan");
+    const isNriQuery = normalizedQuery.includes("nri") || normalizedQuery.includes("fema") || normalizedQuery.includes("abroad") || normalizedQuery.includes("overseas") || normalizedQuery.includes("repatriat") || normalizedQuery.includes("agricultural") || normalizedQuery.includes("tds") || normalizedQuery.includes("tax") || normalizedQuery.includes("dtaa") || normalizedQuery.includes("remit") || normalizedQuery.includes("remittance");
+    const isConstructionQuery = normalizedQuery.includes("construction") || normalizedQuery.includes("quality") || normalizedQuery.includes("mivan") || normalizedQuery.includes("formwork") || normalizedQuery.includes("seismic") || normalizedQuery.includes("steel") || normalizedQuery.includes("civil") || normalizedQuery.includes("inspection");
+    const isFinanceQuery = normalizedQuery.includes("foir") || normalizedQuery.includes("down payment") || (normalizedQuery.includes("emi") && !normalizedQuery.includes("home loan")) || normalizedQuery.includes("finance");
+    const isPricingGuideQuery = normalizedQuery.includes("pricing guide") || normalizedQuery.includes("cost breakup") || normalizedQuery.includes("hidden charges") || normalizedQuery.includes("floor rise") || normalizedQuery.includes("plc") || normalizedQuery.includes("preferential") || normalizedQuery.includes("stamp dut") || normalizedQuery.includes("maintenance fund");
+    const isBookingGuideQuery = normalizedQuery.includes("booking") || normalizedQuery.includes("registration guide") || normalizedQuery.includes("commencement") || normalizedQuery.includes("cc") || normalizedQuery.includes("occupancy") || normalizedQuery.includes("oc") || normalizedQuery.includes("encumbrance") || normalizedQuery.includes("escrow") || normalizedQuery.includes("defect liabilit");
+    const isHomeLoanQuery = normalizedQuery.includes("home loan") || normalizedQuery.includes("eligibility") || normalizedQuery.includes("subvention") || normalizedQuery.includes("80c") || normalizedQuery.includes("24b") || normalizedQuery.includes("joint deduction") || normalizedQuery.includes("bank program");
+
+    const queryHasGeneralTopic = isVastuQuery || isNriQuery || isConstructionQuery || isFinanceQuery || isPricingGuideQuery || isBookingGuideQuery || isHomeLoanQuery;
+
+    // Prioritize project-specific chunks over general guide pages
+    if (chunk.projectId !== "general") {
+      if (projectId && chunk.projectId === projectId) {
+        // High boost for active project-specific details
+        finalScore *= 5.0;
+      } else {
+        // Moderate boost for other project listings
+        finalScore *= 2.5;
+      }
+    } else {
+      if (queryHasGeneralTopic) {
+        // Boost generic glossary chunks if they are the direct target of the user query
+        const titleLower = chunk.projectName.toLowerCase();
+        let topicMatched = false;
+        if (isVastuQuery && titleLower.includes("vastu")) topicMatched = true;
+        if (isNriQuery && (titleLower.includes("nri") || titleLower.includes("fema"))) topicMatched = true;
+        if (isConstructionQuery && titleLower.includes("construction")) topicMatched = true;
+        if (isFinanceQuery && (titleLower.includes("emi") || titleLower.includes("loan") || titleLower.includes("finance"))) topicMatched = true;
+        if (isPricingGuideQuery && titleLower.includes("pricing")) topicMatched = true;
+        if (isBookingGuideQuery && (titleLower.includes("booking") || titleLower.includes("registration"))) topicMatched = true;
+        if (isHomeLoanQuery && (titleLower.includes("loan") || titleLower.includes("home"))) topicMatched = true;
+
+        if (topicMatched) {
+          finalScore *= 3.0;
+        } else {
+          finalScore *= 1.2;
+        }
+      } else {
+        // Heavy penalty to prevent generic guides from polluting project-specific inquiries
+        finalScore *= 0.05;
+      }
+    }
+
+    // Category exact word matchmaking boosters
+    if (chunk.category === "pricing" && (normalizedQuery.includes("price") || normalizedQuery.includes("cost") || normalizedQuery.includes("bhk") || normalizedQuery.includes("pricing") || normalizedQuery.includes("pricing guide") || normalizedQuery.includes("buying") || normalizedQuery.includes("crore") || normalizedQuery.includes("lakh") || normalizedQuery.includes("breakup"))) {
+      finalScore *= 1.4;
+    }
+    if (chunk.category === "rera" && (normalizedQuery.includes("rera") || normalizedQuery.includes("licens") || normalizedQuery.includes("approv") || normalizedQuery.includes("rights") || normalizedQuery.includes("registration"))) {
+      finalScore *= 1.4;
+    }
+    if (chunk.category === "possession" && (normalizedQuery.includes("possession") || normalizedQuery.includes("handover") || normalizedQuery.includes("timeline") || normalizedQuery.includes("ready") || normalizedQuery.includes("when"))) {
+      finalScore *= 1.4;
+    }
+
+    return { chunk, score: finalScore };
+  });
+
+  // Sort and filter chunks that are genuinely relevant using rigid partitioning
+  let prioritizedMatches = scoredCandidates.filter(match => match.score > 0.01);
+
+  if (projectId) {
+    const activeMatches = prioritizedMatches.filter(m => m.chunk.projectId === projectId);
+    const generalMatches = prioritizedMatches.filter(m => m.chunk.projectId === "general");
+    const otherMatches = prioritizedMatches.filter(m => m.chunk.projectId !== projectId && m.chunk.projectId !== "general");
+
+    // Sort partitions individually by score
+    activeMatches.sort((a, b) => b.score - a.score);
+    generalMatches.sort((a, b) => b.score - a.score);
+    otherMatches.sort((a, b) => b.score - a.score);
+
+    // Reassemble matches: active project-specific details are given absolute dominance at the top
+    prioritizedMatches = [...activeMatches, ...generalMatches, ...otherMatches];
+  } else {
+    prioritizedMatches.sort((a, b) => b.score - a.score);
+  }
+
+  if (prioritizedMatches.length > 0) {
+    return prioritizedMatches.map(match => match.chunk.text).slice(0, 3);
+  }
+
+  // --- FAILS-SAFE PRESERVATION FALLBACK ---
+  if (projectId) {
+    const projectChunks = RAG_DATA_CHUNKS.filter(chunk => chunk.projectId === projectId);
+    if (projectChunks.length > 0) {
+      const categoryPriority: Record<string, number> = { "pricing": 1, "rera": 2, "location": 3, "possession": 4, "amenities": 5 };
+      const sortedProjectChunks = [...projectChunks].sort((a, b) => {
+        const priorityA = categoryPriority[a.category] || 99;
+        const priorityB = categoryPriority[b.category] || 99;
+        return priorityA - priorityB;
+      });
+      return sortedProjectChunks.slice(0, 3).map(chunk => chunk.text);
+    }
+  }
+
+  return [];
+}
+
+/**
+ * Primary asynchronous semantic similarity retriever.
+ * Invokes the server-side transformer-based semantic similarity scoring system (all-MiniLM-L6-v2) for rich query matches.
+ * Strictly guarantees that active project-specific details take strict primacy over general glossary guides.
+ */
+export async function retrieveContext(query: string, projectId?: string): Promise<string[]> {
+  try {
+    const response = await fetch("/api/semantic-retrieve", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query, projectId }),
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      if (data && !data.useFallback && Array.isArray(data.results)) {
+        console.log("🧬 Transformer-based Semantic Similarity search yielded:", data.results.length, "hits");
+        return data.results;
+      }
+    }
+  } catch (err) {
+    console.warn("⚠️ Client failed to reach semantic retrieve API, falling back to local priority-partitioned search:", err);
+  }
+
+  // Fallback to purely client-side priority-partitioned engine
+  console.log("🪵 Semantic API unavailable, executing client-side priority-partitioned fallback.");
+  return retrieveContextLexical(query, projectId);
 }

@@ -250,7 +250,7 @@ export default function CfoVastuSuite({
         >
           <div className="flex items-center justify-center gap-1.5">
             <Calculator className="w-3.5 h-3.5" />
-            CFO Finance
+            CFO <span className="hidden sm:inline">Finance</span>
           </div>
         </button>
 
@@ -264,7 +264,7 @@ export default function CfoVastuSuite({
         >
           <div className="flex items-center justify-center gap-1.5">
             <Compass className="w-3.5 h-3.5 animate-spin-slow" />
-            Vastu Score
+            Vastu <span className="hidden sm:inline">Score</span>
           </div>
         </button>
 
@@ -278,7 +278,7 @@ export default function CfoVastuSuite({
         >
           <div className="flex items-center justify-center gap-1.5">
             <Globe className="w-3.5 h-3.5" />
-            NRI FEMA Guide
+            NRI <span className="hidden sm:inline">FEMA Guide</span>
           </div>
         </button>
       </div>
@@ -299,7 +299,7 @@ export default function CfoVastuSuite({
             </div>
 
             {/* Inputs Section */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-[10px] font-mono font-bold text-[#666] uppercase block">Unit Configuration</label>
                 <select
@@ -412,7 +412,7 @@ export default function CfoVastuSuite({
             </div>
 
             {/* Calculations summaries */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="bg-blue-950/10 border border-blue-500/20 rounded-lg p-3 flex flex-col justify-between">
                 <span className="text-[10px] font-mono font-bold text-[#666] uppercase">Estimated EMI / Month</span>
                 <span className="text-base font-mono font-bold text-blue-400 mt-1">
@@ -474,7 +474,7 @@ export default function CfoVastuSuite({
             </div>
 
             {/* Inputs Selection direction */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-1">
                 <label className="text-[10px] font-mono font-bold text-[#666] uppercase block">Main Entrance Direction</label>
                 <select

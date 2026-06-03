@@ -128,11 +128,112 @@ function isBookingIntent(text: string, previousOfferSent: boolean): boolean {
   return false;
 }
 
+// Custom lightweight parser to dynamically format Markdown outputs in chat history (headings, bolds, lists, and links)
+const renderMessageText = (text: string) => {
+  if (!text) return null;
+
+  // Split message text by line breaks to handle headers, lists, and normal block formatting
+  const lines = text.split("\n");
+  
+  return lines.map((line, idx) => {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      // Empty line is rendered as a clean spacing gap
+      return <div key={idx} className="h-1.5" />;
+    }
+
+    // Check for standard Bullet Lists (- item or * item)
+    const isBulletItem = trimmed.startsWith("- ") || trimmed.startsWith("* ");
+    let contentToParse = trimmed;
+    if (isBulletItem) {
+      contentToParse = trimmed.substring(2);
+    }
+
+    // Parse double asterisks (**bold**) into strong visual tags
+    const boldRegex = /\*\*(.*?)\*\*/g;
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = boldRegex.exec(contentToParse)) !== null) {
+      const matchIndex = match.index;
+      if (matchIndex > lastIndex) {
+        parts.push(contentToParse.substring(lastIndex, matchIndex));
+      }
+      parts.push(
+        <strong key={matchIndex} className="font-bold text-white drop-shadow-sm">
+          {match[1]}
+        </strong>
+      );
+      lastIndex = boldRegex.lastIndex;
+    }
+
+    if (lastIndex < contentToParse.length) {
+      parts.push(contentToParse.substring(lastIndex));
+    }
+
+    const parsedContent = parts.length > 0 ? parts : contentToParse;
+
+    // Check for standard Markdown Headings (# or ##)
+    let headerLevel = 0;
+    let cleanHeaderContent = parsedContent;
+
+    if (typeof parsedContent === "string") {
+      if (parsedContent.startsWith("### ")) {
+        headerLevel = 3;
+        cleanHeaderContent = parsedContent.substring(4);
+      } else if (parsedContent.startsWith("## ")) {
+        headerLevel = 2;
+        cleanHeaderContent = parsedContent.substring(3);
+      } else if (parsedContent.startsWith("# ")) {
+        headerLevel = 1;
+        cleanHeaderContent = parsedContent.substring(2);
+      }
+    } else if (Array.isArray(parsedContent) && parsedContent.length > 0 && typeof parsedContent[0] === "string") {
+      const firstStr = parsedContent[0];
+      if (firstStr.startsWith("### ")) {
+        headerLevel = 3;
+        parsedContent[0] = firstStr.substring(4);
+      } else if (firstStr.startsWith("## ")) {
+        headerLevel = 2;
+        parsedContent[0] = firstStr.substring(3);
+      } else if (firstStr.startsWith("# ")) {
+        headerLevel = 1;
+        parsedContent[0] = firstStr.substring(2);
+      }
+    }
+
+    // Render formatted block types accordingly
+    if (headerLevel > 0) {
+      return (
+        <span key={idx} className="block font-bold text-blue-400 mt-2 mb-1.5 text-xs tracking-wide uppercase font-mono">
+          {cleanHeaderContent}
+        </span>
+      );
+    }
+
+    if (isBulletItem) {
+      return (
+        <span key={idx} className="flex items-start gap-2 pl-2.5 my-1.5 leading-relaxed">
+          <span className="text-blue-500 font-bold select-none text-[9px] mt-1">•</span>
+          <span className="flex-1 text-[#e0e0e0] font-medium">{parsedContent}</span>
+        </span>
+      );
+    }
+
+    return (
+      <span key={idx} className="block leading-relaxed my-0.5 text-[#e0e0e0] font-medium">
+        {parsedContent}
+      </span>
+    );
+  });
+};
+
 interface VoiceBotWidgetProps {
   activeProject: Project | null;
   onBookingDetected: (projectName: string) => void;
   onLeadAdded: () => void;
-  onActionDetected?: (action: "finance" | "vastu" | "nri") => void;
+  onActionDetected?: (action: "finance" | "vastu" | "nri" | "loan_eligibility") => void;
 }
 
 export default function VoiceBotWidget({
@@ -214,6 +315,9 @@ export default function VoiceBotWidget({
   const sendMessage = async (text: string) => {
     if (!text || text.trim().length === 0) return;
 
+    // Actively prime the audio engines on this direct click gesture BEFORE the async fetch
+    voiceEngine.primeAudio();
+
     // Acknowledge User Message
     const userMsg: Message = {
       id: `msg_${Date.now()}`,
@@ -228,24 +332,100 @@ export default function VoiceBotWidget({
     // Stop listening during processing
     voiceEngine.stopListening();
 
-    // STEP 4 Context Retrieval (Edge RAG matching)
-    const contextChunks = retrieveContext(text, activeProject?.id);
-    setActiveChunks(contextChunks);
+    // STEP 3.5: Execute Actions and Booking trigger checks IMMEDIATELY on the client-side (zero latency, error-resilient)
+    if (onActionDetected) {
+      const userText = text.toLowerCase().trim();
+      
+      // Match explicit direct eligibility check words
+      const isEligibilityRequest = 
+        userText.includes("eligibility") || 
+        userText.includes("eligible") ||
+        userText.includes("loan limit") ||
+        userText.includes("load eligibility") ||
+        userText.includes("loan eligibility") ||
+        userText.includes("eligibility check") ||
+        userText.includes("cibil") ||
+        userText.includes("credit score") ||
+        userText.includes("అర్హత") || // Telugu for eligibility
+        userText.includes("लोन पात्रता") || // Hindi for loan eligibility
+        userText.includes("पात्रता");
 
-    // Advanced Conversational Filler sound trigger
-    if (contextChunks.length > 0) {
-      const fillers = [
-        "One moment. Retrieving that directly from our official pre-sales databases...",
-        "Checking RERA specifications for that luxury development. Please hold...",
-        "Accessing configuration prices in our systems right now...",
-      ];
-      const selectedFiller = fillers[Math.floor(Math.random() * fillers.length)];
-      try {
-        voiceEngine.speak(selectedFiller);
-      } catch (speakErr) {
-        console.warn("Muted background filler speech warning:", speakErr);
+      if (isEligibilityRequest) {
+        onActionDetected("loan_eligibility");
+      } else {
+        const hasLaunchIntent = 
+          userText.includes("take me") || 
+          userText.includes("go to") || 
+          userText.includes("navigate") || 
+          userText.includes("open") || 
+          userText.includes("show") || 
+          userText.includes("launch") || 
+          userText.includes("popup") || 
+          userText.includes("pop-up") || 
+          userText.includes("trigger") || 
+          userText.includes("view") || 
+          userText === "emi calculator" ||
+          userText === "vastu compliance" ||
+          userText === "nri fema guide" ||
+          userText === "vastu compliance score" ||
+          userText.includes("ఓపెన్") || 
+          userText.includes("తీసుకెళ్ళు") || 
+          userText.includes("తీసుకువెళ్ళు") || 
+          userText.includes("చూపించు") || 
+          userText.includes("खोलें") || 
+          userText.includes("ओपन") || 
+          userText.includes("दिखाएं") || 
+          userText.includes("ले जाएं");
+
+        if (hasLaunchIntent) {
+          const isFinance = 
+            userText.includes("emi") || 
+            userText.includes("cfo") || 
+            userText.includes("finance") || 
+            userText.includes("interest") || 
+            userText.includes("calculate") || 
+            userText.includes("calculator") || 
+            userText.includes("కిస్తీ") || 
+            userText.includes("किस्त") || 
+            userText.includes("ब्याज");
+            
+          const isVastu = 
+            userText.includes("vastu") || 
+            userText.includes("shastra") || 
+            userText.includes("వాస్తు") || 
+            userText.includes("దిశ") || 
+            userText.includes("दिशा") || 
+            userText.includes("वास्तु");
+            
+          const isNri = 
+            userText.includes("nri") || 
+            userText.includes("fema") || 
+            userText.includes("foreign") || 
+            userText.includes("abroad") || 
+            userText.includes("repatriat") || 
+            userText.includes("ఎన్‌ఆర్‌ఐ") || 
+            userText.includes("एनआरआई");
+
+          if (isFinance) {
+            onActionDetected("finance");
+          } else if (isVastu) {
+            onActionDetected("vastu");
+          } else if (isNri) {
+            onActionDetected("nri");
+          }
+        }
       }
     }
+
+    // Step 3.6: Instant Site visit schedule checking (from current query if explicit)
+    const detectsBooking = isBookingIntent(text, false);
+    if (detectsBooking && activeProject) {
+      onBookingDetected(activeProject.name);
+    }
+
+    // STEP 4 Context Retrieval (Edge RAG matching)
+    const contextChunks = await retrieveContext(text, activeProject?.id);
+    setActiveChunks(contextChunks);
 
     // Inspect User Budget to Trigger Graceful Portfolio Cross-Sell / Pivot
     let parsedText = text;
@@ -331,74 +511,7 @@ export default function VoiceBotWidget({
         console.warn("Muted main response speech warning:", voiceSynthError);
       }
 
-      // STEP 5.5: Check for financial, vastu, or NRI actions based on user message only
-      if (onActionDetected) {
-        const userText = text.toLowerCase().trim();
-        
-        const hasLaunchIntent = 
-          userText.includes("take me") || 
-          userText.includes("go to") || 
-          userText.includes("navigate") || 
-          userText.includes("open") || 
-          userText.includes("show") || 
-          userText.includes("launch") || 
-          userText.includes("popup") || 
-          userText.includes("pop-up") || 
-          userText.includes("trigger") || 
-          userText.includes("view") || 
-          userText === "emi calculator" ||
-          userText === "vastu compliance" ||
-          userText === "nri fema guide" ||
-          userText === "vastu compliance score" ||
-          userText.includes("ఓపెన్") || 
-          userText.includes("తీసుకెళ్ళు") || 
-          userText.includes("తీసుకువెళ్ళు") || 
-          userText.includes("చూపించు") || 
-          userText.includes("खोलें") || 
-          userText.includes("ओपन") || 
-          userText.includes("दिखाएं") || 
-          userText.includes("ले जाएं");
-
-        if (hasLaunchIntent) {
-          const isFinance = 
-            userText.includes("emi") || 
-            userText.includes("cfo") || 
-            userText.includes("finance") || 
-            userText.includes("interest") || 
-            userText.includes("calculate") || 
-            userText.includes("calculator") || 
-            userText.includes("కిస్తీ") || 
-            userText.includes("किस्त") || 
-            userText.includes("ब्याज");
-            
-          const isVastu = 
-            userText.includes("vastu") || 
-            userText.includes("shastra") || 
-            userText.includes("వాస్తు") || 
-            userText.includes("దిశ") || 
-            userText.includes("दिशा") || 
-            userText.includes("वास्तु");
-            
-          const isNri = 
-            userText.includes("nri") || 
-            userText.includes("fema") || 
-            userText.includes("foreign") || 
-            userText.includes("abroad") || 
-            userText.includes("repatriat") || 
-            userText.includes("ఎన్‌ఆర్‌ఐ") || 
-            userText.includes("एनआरआई");
-
-          if (isFinance) {
-            onActionDetected("finance");
-          } else if (isVastu) {
-            onActionDetected("vastu");
-          } else if (isNri) {
-            onActionDetected("nri");
-          }
-        }
-      }
-
-      // STEP 6: Check booking intents
+      // Late check booking intents (if triggered by recommendations)
       const lastMsg = messages.length > 0 ? messages[messages.length - 1] : null;
       const previousAssistantResponseOffer = lastMsg &&
         lastMsg.sender === "assistant" &&
@@ -407,9 +520,8 @@ export default function VoiceBotWidget({
          lastMsg.text.toLowerCase().includes("schedule a vip") ||
          lastMsg.text.toLowerCase().includes("coordinate a site"));
 
-      const detectsBooking = isBookingIntent(text, !!previousAssistantResponseOffer);
-
-      if (detectsBooking && activeProject) {
+      const lateDetectsBooking = isBookingIntent(text, !!previousAssistantResponseOffer);
+      if (lateDetectsBooking && activeProject) {
         onBookingDetected(activeProject.name);
       }
 
@@ -606,7 +718,26 @@ export default function VoiceBotWidget({
                       : "bg-[#111115] text-[#e0e0e0] border border-[#1f1f23] rounded-tl-none shadow-inner"
                   }`}
                 >
-                  <p className="leading-normal">{msg.text}</p>
+                  {isUser ? (
+                    <p className="leading-normal pr-6">{msg.text}</p>
+                  ) : (
+                    <div className="leading-normal pr-6 space-y-0.5">
+                      {renderMessageText(msg.text)}
+                    </div>
+                  )}
+                  
+                  {!isUser && (
+                    <button
+                      onClick={() => {
+                        voiceEngine.cancelSpeaking();
+                        voiceEngine.speak(msg.text);
+                      }}
+                      className="absolute top-2.5 right-2 px-1 py-0.5 rounded bg-[#16161c] hover:bg-[#1f1f26] text-blue-400 hover:text-blue-300 transition-colors opacity-40 group-hover:opacity-100 cursor-pointer"
+                      title="Replay voice response"
+                    >
+                      <Volume2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                   
                   <div
                     className={`text-[9px] mt-1 font-mono flex items-center gap-1 ${

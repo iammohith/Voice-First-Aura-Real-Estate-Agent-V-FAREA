@@ -145,12 +145,77 @@ export function scrubSelfEvaluationArtifacts(text: string): string {
 }
 
 /**
+ * Scans output text for any HTTP/HTTPS links and validates them against pre-approved RERA assets.
+ * Rewrites or removes hallucinated links to prevent misinformation.
+ */
+export function enforceLinkGuardrail(text: string, projectId?: string): string {
+  const APPROVED_LINKS = new Set([
+    "https://signature-estates.ai/docs/prestige-solitaire-brochure.pdf",
+    "https://signature-estates.ai/docs/dlf-horizon-brochure.pdf",
+    "https://signature-estates.ai/docs/lodha-splendora-marina-brochure.pdf",
+    "https://signature-estates.ai/docs/my-home-legend-brochure.pdf",
+    "https://signature-estates.ai/docs/rera-official-brochure.pdf",
+    "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&q=80&w=1000",
+    "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&q=80&w=1000",
+    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=80&w=1000",
+    "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&q=80&w=1000"
+  ]);
+
+  let verifiedText = text;
+
+  // Regex to extract any HTTP/HTTPS links
+  const urlRegex = /https?:\/\/[^\s)\"']+/gi;
+  
+  // We can track matches and replace them with correct mappings if they are not approved
+  const matches = [...verifiedText.matchAll(urlRegex)];
+  
+  for (const match of matches) {
+    const rawUrl = match[0];
+    
+    // Clean trailing punctuation that might be captured by regex
+    let cleanUrl = rawUrl;
+    while (cleanUrl.endsWith(".") || cleanUrl.endsWith(",") || cleanUrl.endsWith(")") || cleanUrl.endsWith("?")) {
+      cleanUrl = cleanUrl.slice(0, -1);
+    }
+
+    if (!APPROVED_LINKS.has(cleanUrl)) {
+      // It's a hallucinated/incorrect link! Let's align or rewrite it.
+      const lower = cleanUrl.toLowerCase();
+      
+      let correctedUrl = "https://signature-estates.ai/docs/rera-official-brochure.pdf"; // safe fallback
+      
+      if (lower.includes("solitaire") || lower.includes("prestige")) {
+        correctedUrl = "https://signature-estates.ai/docs/prestige-solitaire-brochure.pdf";
+      } else if (lower.includes("horizon") || lower.includes("dlf")) {
+        correctedUrl = "https://signature-estates.ai/docs/dlf-horizon-brochure.pdf";
+      } else if (lower.includes("marina") || lower.includes("splendora") || lower.includes("lodha")) {
+        correctedUrl = "https://signature-estates.ai/docs/lodha-splendora-marina-brochure.pdf";
+      } else if (lower.includes("legend") || lower.includes("myhome") || lower.includes("my-home") || lower.includes("my home")) {
+        correctedUrl = "https://signature-estates.ai/docs/my-home-legend-brochure.pdf";
+      } else if (projectId) {
+        // Correct based on current active workspace context
+        if (projectId === "prestige-solitaire") correctedUrl = "https://signature-estates.ai/docs/prestige-solitaire-brochure.pdf";
+        else if (projectId === "dlf-horizon") correctedUrl = "https://signature-estates.ai/docs/dlf-horizon-brochure.pdf";
+        else if (projectId === "lodha-marina") correctedUrl = "https://signature-estates.ai/docs/lodha-splendora-marina-brochure.pdf";
+        else if (projectId === "myhome-legend") correctedUrl = "https://signature-estates.ai/docs/my-home-legend-brochure.pdf";
+      }
+
+      console.warn(`🚨 Guardrail Injected: Rewriting hallucinated URL "${cleanUrl}" to "${correctedUrl}"`);
+      verifiedText = verifiedText.replace(rawUrl, correctedUrl);
+    }
+  }
+
+  return verifiedText;
+}
+
+/**
  * Standard client-side composite guardrail executor.
  */
 export function auditPreSalesOutput(text: string, projectId?: string): string {
   let result = text;
   result = scrubSelfEvaluationArtifacts(result);
   result = enforcePriceGuardrail(result, projectId);
+  result = enforceLinkGuardrail(result, projectId);
   result = sanitizePrivacyPII(result);
   const reraResult = injectReraDisclaimer(result, projectId);
   return reraResult.finalResponse;

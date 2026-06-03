@@ -70,9 +70,15 @@ Engage with an intelligent agent via speech using browser-native Web Speech APIs
 A behavioural telemetry engine continuously scores buyer intent based on conversational signals — transaction intent, financial readiness, timeline urgency, Vastu interest, and NRI status. Dispatches `LeadHot` custom events when the score crosses the 90% threshold.
 
 ### 📐 CFO & Vastu Suite
-- **CFO Finance Desk** — EMI breakdowns with SBI/HDFC rates (7.5%–11.0%), including Section 194-IA 1% TDS deductions for properties above ₹50 Lakh. State-specific stamp duty and GST calculations for Karnataka, Haryana, Telangana, and Maharashtra.
-- **Vastu Compliance Scorer** — Entrance/kitchen orientation analysis with traditional remediation strategies and a 100-point celestial alignment scoring matrix.
-- **NRI FEMA Desk** — FEMA compliance declarations, NRE/NRO/FCNR guidance, and repatriation eligibility checks.
+- **CFO Finance Desk** — Amortization, state-specific stamp duty, and GST math customized for Karnataka, Haryana, Telangana, and Maharashtra. Handles 1% TDS calculations under Section 194-IA for high-value properties (≥ ₹50 Lakh).
+- **Vastu Compliance Scorer** — Orientation compatibility (entrance, kitchen) mapped against traditional brass/copper pyramid remediation logic and custom celestial scores.
+- **NRI FEMA Desk** — FEMA compliance checklists, repatriation eligibility limits across NRE/NRO accounts, and CA-certified compliance declarations.
+
+### 💳 Dynamic Mortgage Underwriting & Eligibility Desk
+- **Continuous Loan Underwriting Engine** — Computes exact lending eligibility in real-time based on the **Fixed Obligation to Income Ratio (FOIR)** and bank-approved debt leverage caps.
+- **Super Prime Bureau Adjustments** — Integrates CIBIL-driven risk premiums or discounts (e.g., -20 bps discount and +10% booster for scores ≥ 800) and calculates eligibility hair-cuts for subprime categories.
+- **Dynamic Variant Dropdowns** — Replaces basic estimations with fully-loaded select dropdowns to calculate loans dynamically for all real property configurations and price variants.
+- **Tier-1 Bank Matrix** — Provides real-time matching against State Bank of India (SBI), HDFC, ICICI, and LIC Housing boards, with accurate processing tariffs and adjusted mortgage EMIs.
 
 ### 📲 Automated WhatsApp VIP Handoff
 Proactively dispatches RERA-compliant brochures and VIP calendar invites via the WhatsApp Business Cloud API when a lead crosses the high-commitment scoring threshold.
@@ -356,49 +362,57 @@ sequenceDiagram
 
 ---
 
-## 📚 Edge RAG — Context Retrieval Engine
+## 📚 Edge RAG — Hybrid Context Retrieval Engine
 
-The `retrieveContext()` function implements a lightweight, **zero-latency keyword-scoring retrieval engine** that runs entirely on the client side. It eliminates the need for a vector database by using a hand-crafted knowledge base of 30+ RERA-grounded chunks:
+The application features a robust **Hybrid RAG Pipeline** designed for high precision, zero-compromise grounding, and fault tolerance:
+
+1. **Server-Side Semantic Search (Primary):**
+   - Utilizes `@xenova/transformers` with the highly optimized **all-MiniLM-L6-v2** sentence-embedding model.
+   - Generates 384-dimensional dense vectors in real-time to execute cosine similarity calculations.
+   - Features a custom scoring and prioritization engine that boosts relevance for the selected property, penalizes cross-project mentions to prevent context bleeding, and dynamically boosts general guides (Vastu, FEMA, Underwriting) when related topics are queried.
+
+2. **Client-Side Lexical Search (Fallback):**
+   - Implemented as a zero-latency TF-IDF (Term Frequency-Inverse Document Frequency) search engine directly inside `src/data.ts`.
+   - Tokenizes and filters stop-words, matching terms with a structural 5.0x multiplier on keywords and an 8.0x weighting on property titles.
+   - If the server-side API is unavailable or the ONNX model is still loading, it gracefully falls back to this local priority-partitioned algorithm, ensuring continuous RERA-compliant answers.
 
 ```mermaid
 flowchart TD
-    INPUT["💬 User Query<br/>'What is the price of 3BHK in My Home Legend?'"] --> NORMALIZE["Normalize to lowercase"]
+    INPUT["💬 User Query<br/>'What are the bank tie-ups for Prestige Solitaire?'"] --> ROUTER{"Retrieval Status?"}
+    
+    ROUTER -->|"Server Online"| SEMANTIC["🧬 Server-Side Semantic Search<br/>1. Run ONNX all-MiniLM-L6-v2<br/>2. Compute 384-d Cosine Similarity<br/>3. Apply active project boosting"]
+    ROUTER -->|"Server Offline / Loading"| LEXICAL["🪵 Client-Side TF-IDF Fallback<br/>1. Tokenize query & filter stop-words<br/>2. Apply TF-IDF document weights<br/>3. Compute keyword & title multipliers"]
 
-    NORMALIZE --> FILTER{"Is a specific<br/>project selected?"}
-
-    FILTER -->|"Yes + no cross-project mention"| SCOPED["Filter chunks to<br/>projectId + 'general'"]
-    FILTER -->|"No / cross-project detected"| ALL["Use all 30+ chunks"]
-
-    SCOPED --> SCORE
-    ALL --> SCORE
-
-    SCORE["Score each chunk"] --> S1["📛 +5 pts<br/>Project name match"]
-    SCORE --> S2["🔑 +2 pts per<br/>keyword match"]
-    SCORE --> S3["📝 +1 pt per<br/>content word match"]
-
-    S1 --> RANK
-    S2 --> RANK
-    S3 --> RANK
-
-    RANK["Sort by score DESC<br/>Filter score > 0"] --> TOP3["Return top 3 chunks"]
-
-    TOP3 --> SERVER["Sent as contextChunks[]<br/>to POST /api/chat"]
+    SEMANTIC --> CONTEXT["Sort Candidates by Score<br/>Filter out non-matching projects"]
+    LEXICAL --> CONTEXT
+    
+    CONTEXT --> TOP3["Return Top 3 Grounding Chunks"]
+    TOP3 --> SERVER["Injected as Context Overlay<br/>into Server Chat Prompt"]
 
     style INPUT fill:#1a1f2e,stroke:#8b5cf6,color:#c4b5fd
+    style SEMANTIC fill:#1a1f2e,stroke:#3b82f6,color:#93c5fd
+    style LEXICAL fill:#1a1f2e,stroke:#f59e0b,color:#fcd34d
     style TOP3 fill:#1a1f2e,stroke:#10b981,color:#6ee7b7
-    style SCORE fill:#1a1f2e,stroke:#f59e0b,color:#fcd34d
 ```
+
+**Project-Specific Loan Eligibility & Bank Approval Grounding Chunks:**
+To satisfy deep underwriting pre-checks, we have added precise, pre-approved bank tie-up and eligibility guidelines for all listed real estate developments:
+- **Prestige Solitaire:** Pre-approved by **State Bank of India (SBI), HDFC Bank, ICICI Bank, Axis Bank, and LIC Housing Finance** for rapid 5-7 day processing. Standard 80% LTV applies for scores >= 750, with optional joint-borrowing to double tax benefits and expand FOIR allocation up to 60%.
+- **DLF Horizon Residences:** Partnered with hyper-premium lenders like **HDFC Wealth Mortgages, SBI Retail Commercial, ICICI Wealth, Axis Wealth, and Standard Chartered**. Offers a preferential **-20 bps APR discount** and a 1.10x borrowing booster for Super Prime Elite credit scores (>= 800).
+- **Lodha Splendora Marina:** Connected with **ICICI Bank, SBI, HDFC, Axis, Kotak Mahindra, and Union Bank**. As a completed, ready-to-move-in luxury project with Occupancy Certificates, it enjoys **0% GST requirements**, accelerating capital efficiency and loan disbursement to within 3-5 days.
+- **My Home Legend:** Grouped under **SBI Retail, HDFC Capital, ICICI Elite, and Union Bank of India**. Pre-qualified for a **10:90 structural plan under builder subvention programs**, where the developer handles interest-accrual until possession, solving dual rent/EMI loads during current quarters.
 
 **RAG Chunk Categories:**
 
-| Category | Count | Examples |
-|----------|-------|---------|
-| `pricing` | 4 | Unit configs, carpet areas, price ranges |
-| `rera` | 4 | Registration numbers, compliance status |
-| `possession` | 4 | Timeline, construction stage |
-| `location` | 3 | Connectivity, metro distance, landmarks |
-| `amenities` | 3 | Clubhouse, pool, EV charging |
-| `general` | 15+ | Vastu, NRI FEMA, legal docs, stamp duty, EMI |
+| Category | Count | Examples | Key Elements Grounded / Indexed |
+|----------|-------|----------|--------------------------------|
+| `pricing` | 8 | Unit configs, bank approvals | Variant values, RERA carpet sizes, bank partner tie-ups |
+| `rera` | 4 | Registration numbers, compliance | Official IDs, authority status, legal declarations |
+| `possession`| 4 | Timeline, construction stage | Phase handovers, structural ready markers, grace periods |
+| `location` | 3 | Connectivity, metro, landmarks | Travel distances, local hubs, major highway links |
+| `amenities`| 3 | Clubhouse, pool, EV charging | Power backup specs, lifestyle hubs, automated additions |
+| `underwriting`| 3 | FOIR, CIBIL scores, LTV limits | **FOIR Caps (50-60%)**, **CIBIL tiers standard bounds & ROI discounts (-20bps to rejection)**, **LTV 80% caps and downpayment bridging** |
+| `general` | 15+ | Vastu, NRI FEMA, stamp duties | NRE/NRO NRO 15CA/CB rules, traditional entrance remediation |
 
 ---
 
@@ -568,6 +582,68 @@ graph TD
 
 ---
 
+## 💳 Mortgage Underwriting & Loan Eligibility Desk
+
+The `HomeLoanCalculator` component is a high-performance banking stability calculator designed to solve precise consumer underwriting profiles in real time. It performs multi-variable inverse NPV calculations to establish dynamic lending limits and maps those limitations directly against the four property listings:
+
+```mermaid
+graph TD
+    subgraph Inputs["📝 Underwriting Inputs"]
+        I1["Gross Salary Profile"]
+        I2["Existing Obligation EMIs"]
+        I3["CIBIL Bureau Credit score"]
+        I4["Target Property Variant Price"]
+    end
+
+    subgraph FOIR_Calc["📊 FOIR Capacity System"]
+        I1 --> F_Tier{"Verify Salary Level"}
+        F_Tier -->|"< ₹50k/mo"| F50["FOIR Limit: 50%"]
+        F_Tier -->|"₹50k - ₹1L/mo"| F50_2["FOIR Limit: 50%"]
+        F_Tier -->|"₹1L - ₹2L/mo"| F55["FOIR Limit: 55%"]
+        F_Tier -->|"> ₹2L/mo"| F60["FOIR Limit: 60%"]
+        
+        FOIR_Limit["FOIR %"] --> Max_O["Gross Allowed EMI Limit = Salary x FOIR%"]
+        I2 --> Underwritten_Capacity["Net EMI Capacity = Gross Allowed - Existing EMIs"]
+        Max_O --> Underwritten_Capacity
+    end
+
+    subgraph Bureau_Calc["🛡️ CIBIL Risk Adjustment"]
+        I3 --> C_Tier{"Verify Credit score"}
+        C_Tier -->|">= 800"| C_Super["Super Prime Elite<br/>-20 bps ROI Discount<br/>1.10x Max eligibility Booster"]
+        C_Tier -->|"750 - 799"| C_Standard["Standard Prime<br/>+0 bps (No change)<br/>1.00x eligibility Multiplier"]
+        C_Tier -->|"700 - 749"| C_Marginal["Marginal Prime<br/>+25 bps ROI Premium<br/>0.90x eligibility Haircut"]
+        C_Tier -->|"650 - 699"| C_Subprime["Subprime Tier-2<br/>+65 bps ROI Premium<br/>0.70x eligibility Haircut"]
+        C_Tier -->|"< 650"| C_Decline["Bureau Rejected<br/>Direct Underwriting Decline"]
+    end
+
+    subgraph Capital_Evaluation["💰 Real-Time Sanctioning & LTV"]
+        Underwritten_Capacity & C_Super & C_Standard & C_Marginal & C_Subprime --> PV["Base Max Credit Borrowing Capacity<br/>(NPV of Net EMI over Tenure)"]
+        PV --> Max_Eligible["Max Sanctioned Loan Limit = PV x CIBIL Multiplier"]
+        
+        I4 --> LTV["Calculate Standard 80% LTV Loan Quota"]
+        LTV & Max_Eligible --> Approved["Actual Approved Loan Size = Min(LTV Standard, Max Sanctioned Limit)"]
+        
+        Approved --> Gap{"Approved Loan < LTV Standard?"}
+        Gap -->|"Yes"| Action["⚠️ Action Required:<br/>Buyer Must Bridge Lending Gap<br/>via Additional Cash Downpayment"]
+        Gap -->|"No"| Full_Approve["✅ Fully Approved:<br/>Standard 20% downpayment is sufficient"]
+        
+        C_Decline --> Underwriting_Declined["❌ Underwriting Rejected:<br/>Bureau Credit Score Cut-off Violations"]
+    end
+
+    style Inputs fill:#0d1117,stroke:#3b82f6,color:#93c5fd
+    style FOIR_Calc fill:#0d1117,stroke:#f59e0b,color:#fcd34d
+    style Bureau_Calc fill:#0d1117,stroke:#10b981,color:#6ee7b7
+    style Capital_Evaluation fill:#1a1f2e,stroke:#a855f7,color:#d8b4fe
+```
+
+### Core Underwriting Mechanics:
+1. **Dynamic Rate Adjustments**: Solves exact retail home loan rates by factoring benchmark bank values (SBI, HDFC, ICICI, LIC) against individual CIBIL score premiums or discounts.
+2. **Dynamic Price Variant Selector**: Syncs properties directly and establishes real-time calculations across custom budget sizes and specific configured variants (`3BHK Sky Villa`, `4BHK Presidential Suite`, `Penthouse`).
+3. **Cash-flow & Downpayment Advice**: Illustrates structured bridging cash components when the dynamic credit ceiling falls below standard 80% LTV allotments, alerting buyers with exact parameters.
+4. **Tier-1 Bank Pricing Matrix**: Directly outputs standard processing charges, effective ROIs, and monthly mortgage EMIs to maximize transactional confidence and remove friction during buyer nurturing.
+
+---
+
 ## 🛠️ Tech Stack
 
 | Layer | Technology | Purpose |
@@ -610,6 +686,7 @@ voice-first-pre-sales-real-estate-ai/
 │   │   ├── VoiceBotWidget.tsx         # 🎤 Voice conversation interface — STT/TTS, RAG, lead scoring, booking detection
 │   │   ├── ProjectList.tsx            # 🏢 Filterable property catalog grid with region badges
 │   │   ├── CfoVastuSuite.tsx          # 📐 EMI calculator / Vastu scorer / NRI FEMA desk (3-tab suite)
+│   │   ├── HomeLoanCalculator.tsx     # 💳 Underwriting & loan eligibility desk (Continuous FOIR/LTV calculations)
 │   │   ├── SiteVisitBooking.tsx       # 📅 VIP site visit booking form modal with server-side persistence
 │   │   └── LeadActivityMonitor.tsx    # 📊 Real-time CRM lead feed with polling refresh
 │   │
