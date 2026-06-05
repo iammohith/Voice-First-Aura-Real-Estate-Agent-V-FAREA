@@ -8,7 +8,7 @@
 
 # 🏠 Voice-First Aura Real Estate Agent (V-FAREA)
 
-> **An edge-native, voice-first real estate pre-sales engine** that captures, qualifies, and converts premium buyer leads in real time — powered by **Gemini 3.5 Flash**, built with the **Google AI SDK**, and deployed on **Google Cloud Run**.
+> **An edge-native, voice-first real estate pre-sales engine** that captures, qualifies, and converts premium buyer leads in real time — powered by **Gemini 3.5 Flash** and **Gemini 3.1 Flash TTS**, built with the **Google AI SDK**, and deployed on **Google Cloud Run**.
 
 🔗 **Live Demo:** [voice-first-pre-sales-real-estate-ai-577822405739.asia-southeast1.run.app](https://voice-first-pre-sales-real-estate-ai-577822405739.asia-southeast1.run.app)
 
@@ -63,11 +63,15 @@ graph LR
 
 ## 🚀 Key Features
 
-### 🎤 Low-Latency Voice-Bot Widget
-Engage with an intelligent agent via speech using browser-native Web Speech APIs. Supports real-time STT (Speech-to-Text) and TTS (Text-to-Speech) with automatic language detection and barge-in interruption.
+### 🎤 Hybrid Voice-Bot Widget (Edge + Cloud)
+Engage with an intelligent agent via speech using browser-native Web Speech APIs.
+- **Speech-to-Text (STT):** Continuous on-device recognition with language support.
+- **Server-Side Neural Text-to-Speech (TTS):** Dynamic `/api/tts` proxy utilizing the **`gemini-3.1-flash-tts-preview`** model to generate organic, high-fidelity regional voices mapped across 9 Indian languages.
+- **Edge Fallback TTS:** Gracefully degrades to native browser `SpeechSynthesis` if the server is offline or lacks API key configuration, ensuring uninterrupted operation.
+- **Interruption Support:** Real-time barge-in capability that silences synthesis as soon as the user starts speaking.
 
 ### 📊 Real-Time Lead Scoring & Monitoring
-A behavioural telemetry engine continuously scores buyer intent based on conversational signals — transaction intent, financial readiness, timeline urgency, Vastu interest, and NRI status. Dispatches `LeadHot` custom events when the score crosses the 90% threshold.
+A behavioral telemetry engine continuously scores buyer intent based on conversational signals — transaction intent, financial readiness, timeline urgency, Vastu interest, and NRI status. Dispatches `LeadHot` custom events when the score crosses the 90% threshold.
 
 ### 📐 CFO & Vastu Suite
 - **CFO Finance Desk** — Amortization, state-specific stamp duty, and GST math customized for Karnataka, Haryana, Telangana, and Maharashtra. Handles 1% TDS calculations under Section 194-IA for high-value properties (≥ ₹50 Lakh).
@@ -83,11 +87,16 @@ A behavioural telemetry engine continuously scores buyer intent based on convers
 ### 📲 Automated WhatsApp VIP Handoff
 Proactively dispatches RERA-compliant brochures and VIP calendar invites via the WhatsApp Business Cloud API when a lead crosses the high-commitment scoring threshold.
 
-### 🛡️ RERA Compliance Guardrails
-Client-side and server-side guardrails enforce price verification, mandatory RERA ID injection, PII scrubbing, and LLM self-evaluation artifact removal — ensuring every response is legally compliant and privacy-safe.
+### 🛡️ 5-Stage Pre-Sales Guardrails
+A multi-layered post-processing pipeline executed post-inference to clean up, verify, and enforce legal compliance on model replies:
+1. **Self-Evaluation Stripping** — Blocks LLM verification leaking or internal prompt checklists.
+2. **Dynamic Price Validation** — Scans all numeral quotas in the text, verifying them against registered property guides with a 5% safety boundary.
+3. **HTTP Link Alignment** — Matches all raw URLs against a strict manifest of approved RERA PDFs, correcting hallucinated links to safe, official domains.
+4. **PII Sanitizer** — Detects and patches 10-digit phone numbers with clean masking tokens.
+5. **Mandatory RERA Endorsement** — Automatically appends registered RERA IDs next to project names if omitted on the final phrase.
 
 ### 🌐 9-Language Multilingual Support
-Full voice + text support for English, Hindi, Telugu, Tamil, Marathi, Bengali, Kannada, Gujarati, and Malayalam with auto-matching TTS voice selection.
+Full voice + text support for English, Hindi, Telugu, Tamil, Marathi, Bengali, Kannada, Gujarat, and Malayalam with auto-matching TTS voice selection.
 
 ### 🧠 Graceful Degradation
 Dual-engine architecture: Gemini 3.5 Flash for production, with an intelligent rule-based fallback engine that provides high-fidelity offline responses for all 4 properties, including Telugu and Hindi.
@@ -113,7 +122,7 @@ graph TB
             TTS["Speech Synthesis<br/>Text-to-Speech"]
             LS["LeadScorer<br/>5-Dimension Intent Analysis"]
             GR["Guardrails<br/>Price / PII / RERA Pipeline"]
-            RAG_C["retrieveContext()<br/>Edge RAG — Keyword Scoring"]
+            RAG_C["retrieveContext()<br/>Edge RAG Orcherstrator"]
             WH["useWhatsAppHandoff<br/>LeadHot Event Listener"]
             VE["useVoiceEngine<br/>STT + TTS Orchestration"]
         end
@@ -125,9 +134,11 @@ graph TB
         WA["/api/whatsapp-handoff<br/>Omnichannel Webhook"]
         HEALTH["/api/health<br/>Liveness Probe"]
         BOOKGET["/api/bookings<br/>Lead List Retrieval"]
+        TTS_API["/api/tts<br/>Server Neural TTS Proxy"]
+        SRAG["/api/semantic-retrieve<br/>ONNX Embeddings Engine"]
 
         subgraph AI["🧠 AI Layer"]
-            GEMINI["Gemini 3.5 Flash<br/>@google/genai SDK"]
+            GEMINI["Gemini 3.5/3.1 Models<br/>@google/genai SDK"]
             SYS["System Instruction<br/>Pre-Sales Persona + Mandates"]
             RAGCTX["RAG Context Overlay<br/>RERA Grounding Facts"]
             FALLBACK["Rule-Based Fallback Engine<br/>getRuleFallback()"]
@@ -158,6 +169,8 @@ graph TB
     VB --> WH
 
     VB -->|"POST /api/chat"| CHAT
+    VB -->|"POST /api/semantic-retrieve"| SRAG
+    VE -->|"POST /api/tts"| TTS_API
     SVB -->|"POST /api/booking/create"| BOOK
     WH -->|"POST /api/whatsapp-handoff"| WA
     LAM -->|"GET /api/bookings"| BOOKGET
@@ -165,6 +178,8 @@ graph TB
     CHAT --> GEMINI
     CHAT --> RAGCTX
     CHAT --> FALLBACK
+    TTS_API --> GEMINI
+    SRAG --> RAGCTX
     GEMINI --> SYS
     WA --> WASERVICE
     BOOK --> STORE
@@ -181,8 +196,6 @@ graph TB
 ```
 
 ### Component Dependency Graph
-
-This diagram shows the precise import relationships between all source modules:
 
 ```mermaid
 graph LR
@@ -260,7 +273,8 @@ graph TB
     end
 
     subgraph GoogleAI["🧠 Google AI Platform"]
-        GEMINI_API["Gemini 3.5 Flash API<br/>@google/genai SDK"]
+        GEMINI_CHAT["Gemini 3.5 Flash API"]
+        GEMINI_TTS["Gemini 3.1 Flash TTS Preview"]
     end
 
     subgraph MetaAPI["📲 Meta Business Platform"]
@@ -269,16 +283,14 @@ graph TB
 
     MIC -->|"getUserMedia()"| BROWSER
     BROWSER -->|"SpeechRecognition<br/>STT (Edge)"| BROWSER
-    BROWSER -->|"SpeechSynthesis<br/>TTS (Edge)"| SPEAKER
+    BROWSER -->|"Web Audio / HTMLAudio`<br/>Neural Speech"| SPEAKER
 
     BROWSER -->|"HTTPS (REST)"| NODE
-    NODE -->|"generateContent()"| GEMINI_API
+    NODE -->|"generateContent()"| GEMINI_CHAT
+    NODE -->|"generateContent() [Modality.AUDIO]"| GEMINI_TTS
     NODE -->|"POST /messages"| WHATSAPP_API
     NODE -->|"serve static"| STATIC
     STATIC -->|"index.html + JS bundle"| BROWSER
-
-    GEMINI_API -->|"AI response text"| NODE
-    WHATSAPP_API -->|"Delivery receipt"| NODE
 
     style UserDevice fill:#0d1117,stroke:#3b82f6,color:#93c5fd
     style CloudRun fill:#0d1117,stroke:#10b981,color:#6ee7b7
@@ -301,7 +313,7 @@ sequenceDiagram
     participant RAG as 📚 retrieveContext()<br/>(Edge RAG)
     participant LeadScorer as 📊 LeadScorer
     participant Server as ⚙️ Express Server
-    participant Gemini as 🧠 Gemini 3.5 Flash
+    participant Gemini as 🧠 Gemini 3.5/3.1
     participant Guardrails as 🛡️ Guardrails Pipeline
     participant WhatsApp as 📲 WhatsApp API
 
@@ -309,9 +321,15 @@ sequenceDiagram
     User->>Browser: Speaks into microphone
     Browser->>VoiceEngine: STT → Raw transcript string
 
-    Note over VoiceEngine,RAG: Phase 2 — Context Retrieval (Client-Side)
+    Note over VoiceEngine,RAG: Phase 2 — Context Retrieval (Hybrid RAG)
     VoiceEngine->>RAG: Query with transcript + activeProjectId
-    RAG-->>VoiceEngine: Top-3 scored RAG chunks (keyword similarity)
+    RAG->>Server: POST /api/semantic-retrieve (all-MiniLM-L6-v2)
+    alt API Success
+        Server-->>RAG: Cosine Similarity Dense Hits
+    else API Timeout / Failure
+        RAG-->>RAG: Run Client-Side TF-IDF Lexical Matcher
+    end
+    RAG-->>VoiceEngine: Top-3 Grounding Chunks
 
     Note over VoiceEngine,LeadScorer: Phase 3 — Intent Scoring (Client-Side)
     VoiceEngine->>LeadScorer: Analyze last 3 user messages
@@ -336,17 +354,25 @@ sequenceDiagram
         Server-->>Server: Deterministic response text
     end
 
-    Server-->>VoiceEngine: JSON { text, engine }
+    Server-->>VoiceEngine: JSON { text, "gemini-3.5-flash" }
 
     Note over VoiceEngine,Guardrails: Phase 5 — Guardrail Audit (Client-Side)
     VoiceEngine->>Guardrails: auditPreSalesOutput(response)
 
-    Note over Guardrails: 1. scrubSelfEvaluation<br/>2. enforcePriceGuardrail<br/>3. sanitizePrivacyPII<br/>4. injectReraDisclaimer
+    Note over Guardrails: 1. scrubSelfEvaluation<br/>2. enforcePriceGuardrail<br/>3. enforceLinkGuardrail<br/>4. sanitizePrivacyPII<br/>5. injectReraDisclaimer
 
     Guardrails-->>VoiceEngine: Verified safe response
 
-    Note over VoiceEngine,Browser: Phase 6 — Speech Output + Booking
-    VoiceEngine->>Browser: Speech Synthesis (TTS)
+    Note over VoiceEngine,Browser: Phase 6 — Hybrid Speech Output + Booking
+    alt GEMINI_API_KEY + Network Online
+        VoiceEngine->>Server: POST /api/tts (text, language)
+        Server->>Gemini: generateContent([Modality.AUDIO], voiceConfig)
+        Gemini-->>Server: High-Fidelity Audio Buffer
+        Server-->>VoiceEngine: JSON base64 audio
+        VoiceEngine->>Browser: Web Audio API playback (Zero-Latency Stream)
+    else Offline / Fallback
+        VoiceEngine->>Browser: Native Speech Synthesis (TTS Fallback)
+    end
     Browser->>User: 🔊 Speaks response aloud
 
     VoiceEngine->>VoiceEngine: isBookingIntent() classification
@@ -354,9 +380,9 @@ sequenceDiagram
         VoiceEngine->>Browser: Open SiteVisitBooking modal
     end
 
-    VoiceEngine->>VoiceEngine: Detect action keywords (EMI/Vastu/NRI)
+    VoiceEngine->>VoiceEngine: Detect action keywords (EMI/Vastu/NRI/Loan Limits)
     alt Action detected with launch intent
-        VoiceEngine->>Browser: Open CfoVastuSuite popup
+        VoiceEngine->>Browser: Open CfoVastuSuite/HomeLoanCalculator popup
     end
 ```
 
@@ -395,14 +421,15 @@ flowchart TD
     style TOP3 fill:#1a1f2e,stroke:#10b981,color:#6ee7b7
 ```
 
-**Project-Specific Loan Eligibility & Bank Approval Grounding Chunks:**
-To satisfy deep underwriting pre-checks, we have added precise, pre-approved bank tie-up and eligibility guidelines for all listed real estate developments:
+### Grounding and Pre-Approved Properties
+
+To satisfy deep underwriting and pre-sales inquiry bounds, precise RERA and legal configurations are strictly cataloged:
 - **Prestige Solitaire:** Pre-approved by **State Bank of India (SBI), HDFC Bank, ICICI Bank, Axis Bank, and LIC Housing Finance** for rapid 5-7 day processing. Standard 80% LTV applies for scores >= 750, with optional joint-borrowing to double tax benefits and expand FOIR allocation up to 60%.
 - **DLF Horizon Residences:** Partnered with hyper-premium lenders like **HDFC Wealth Mortgages, SBI Retail Commercial, ICICI Wealth, Axis Wealth, and Standard Chartered**. Offers a preferential **-20 bps APR discount** and a 1.10x borrowing booster for Super Prime Elite credit scores (>= 800).
 - **Lodha Splendora Marina:** Connected with **ICICI Bank, SBI, HDFC, Axis, Kotak Mahindra, and Union Bank**. As a completed, ready-to-move-in luxury project with Occupancy Certificates, it enjoys **0% GST requirements**, accelerating capital efficiency and loan disbursement to within 3-5 days.
 - **My Home Legend:** Grouped under **SBI Retail, HDFC Capital, ICICI Elite, and Union Bank of India**. Pre-qualified for a **10:90 structural plan under builder subvention programs**, where the developer handles interest-accrual until possession, solving dual rent/EMI loads during current quarters.
 
-**RAG Chunk Categories:**
+### RAG Chunk Categories
 
 | Category | Count | Examples | Key Elements Grounded / Indexed |
 |----------|-------|----------|--------------------------------|
@@ -411,7 +438,7 @@ To satisfy deep underwriting pre-checks, we have added precise, pre-approved ban
 | `possession`| 4 | Timeline, construction stage | Phase handovers, structural ready markers, grace periods |
 | `location` | 3 | Connectivity, metro, landmarks | Travel distances, local hubs, major highway links |
 | `amenities`| 3 | Clubhouse, pool, EV charging | Power backup specs, lifestyle hubs, automated additions |
-| `underwriting`| 3 | FOIR, CIBIL scores, LTV limits | **FOIR Caps (50-60%)**, **CIBIL tiers standard bounds & ROI discounts (-20bps to rejection)**, **LTV 80% caps and downpayment bridging** |
+| `underwriting`| 3 | FOIR, CIBIL scores, LTV limits | **FOIR Caps (50-60%)**, **CIBIL credit bounds & ROI adjustments (-20bps to rejection)**, **LTV 80% caps and downpayment bridging** |
 | `general` | 15+ | Vastu, NRI FEMA, stamp duties | NRE/NRO NRO 15CA/CB rules, traditional entrance remediation |
 
 ---
@@ -451,7 +478,7 @@ graph TD
     style D4 fill:#1a1f2e,stroke:#f59e0b,color:#fcd34d
 ```
 
-**Scoring Behavior:**
+### Scoring Behavior:
 
 - Scores are **compounding** — a user mentioning "book a site visit for the NRI FEMA-compliant east-facing 3BHK" would trigger Transaction + NRI + Vastu + Project dimensions simultaneously.
 - The `LeadHot` event fires **exactly once per session** (singleton guard via module-level `leadHotDispatched` flag).
@@ -461,26 +488,30 @@ graph TD
 
 ## 🛡️ Guardrail System
 
-The `auditPreSalesOutput()` pipeline ensures every AI response is RERA-compliant, factually grounded, and privacy-safe before reaching the user. It runs **client-side** as a post-processing filter:
+The `auditPreSalesOutput()` pipeline ensures every AI response is RERA-compliant, factually grounded, and privacy-safe before reaching the user. It runs **client-side** as a post-processing filter over conversational returns:
 
 ```mermaid
 flowchart LR
     A["🤖 Raw AI Response"] --> B["1️⃣ scrubSelfEvaluation<br/>Remove LLM meta-thought<br/>checklist leaks & rule-check lines"]
     B --> C["2️⃣ enforcePriceGuardrail<br/>Regex-extract ₹ amounts<br/>Verify against RERA min/max<br/>(5% tolerance margin)"]
-    C --> D["3️⃣ sanitizePrivacyPII<br/>Scrub 10-digit Indian<br/>mobile numbers (+91 prefix)"]
-    D --> E["4️⃣ injectReraDisclaimer<br/>Check project name present<br/>but RERA ID absent → Append"]
-    E --> F["✅ Verified Response<br/>Safe for TTS output"]
+    C --> D["3️⃣ enforceLinkGuardrail<br/>Check HTTP assets links<br/>Rewrite/align to official approved RERA PDFs"]
+    D --> E["4️⃣ sanitizePrivacyPII<br/>Scrub 10-digit Indian<br/>mobile numbers"]
+    E --> F["5️⃣ injectReraDisclaimer<br/>Check project name present<br/>but RERA ID absent → Append"]
+    F --> G["✅ Verified Response<br/>Safe for TTS output"]
 
     style A fill:#1a1f2e,stroke:#ef4444,color:#fca5a5
-    style F fill:#1a1f2e,stroke:#10b981,color:#6ee7b7
+    style G fill:#1a1f2e,stroke:#10b981,color:#6ee7b7
 ```
 
-| Guardrail | Detection Method | Action | Module |
-|-----------|-----------------|--------|--------|
-| **Self-Eval Scrub** | Regex for LLM checklist/compliance leak patterns (`"3-6 sentences? Yes"`, `"Rule check:"`) | Strip leaked meta-thought lines | `scrubSelfEvaluationArtifacts()` |
-| **Price Verification** | Regex extraction of ₹ amounts → verify against `numericPriceMin`/`numericPriceMax` per unit config, 5% tolerance | Rewrite to "refer to official RERA price list" | `enforcePriceGuardrail()` |
+### Guardrail Pipeline Stages
+
+| Guardrail | Detection Method | Action | Module Function |
+|-----------|-----------------|--------|-----------------|
+| **Self-Eval Scrub** | Regex for LLM checklist/compliance leak patterns (`"3-6 sentences?"`, `"no long numbers?"`) | Strip leaked validation lines | `scrubSelfEvaluationArtifacts()` |
+| **Price Verification** | Regex extraction of ₹ amounts → verify against `numericPriceMin`/`numericPriceMax` per unit config with 5% safety buffer | Rewrite to "refer to official RERA price list" | `enforcePriceGuardrail()` |
+| **HTTP Link Alignment** | Regex URL search, matches against allowed set of PDFs hosted at `signature-estates.ai` | Align hallucinated URLs to matching correct pre-sales documents | `enforceLinkGuardrail()` |
 | **PII Scrubbing** | Regex for 10-digit Indian mobile numbers (`/(?:\+91[\-\s]?)?[789]\d{9}\b/g`) | Replace with `[PHONE NUMBER SCRUBBED FOR PRIVACY]` | `sanitizePrivacyPII()` |
-| **RERA Injection** | String matching: project name present but RERA ID absent | Append `(RERA Reg: XXXX)` before final period | `injectReraDisclaimer()` |
+| **RERA Injection** | String matching: project name present but RERA ID absent | Append `(RERA Reg: XXXX)` before final phase marker | `injectReraDisclaimer()` |
 
 ---
 
@@ -517,7 +548,7 @@ stateDiagram-v2
     HumanEscalation --> [*]
 ```
 
-**WhatsApp Service Architecture:**
+### WhatsApp Service Architecture:
 
 ```mermaid
 flowchart TD
@@ -547,7 +578,7 @@ flowchart TD
 
 ## 📐 CFO Finance / Vastu / NRI FEMA Suite
 
-The `CfoVastuSuite` component implements three interactive enterprise decision tools as tabbed interfaces:
+The `CfoVastuSuite` component implements three interactive enterprise decision tools as tabbed configurations:
 
 ```mermaid
 graph TD
@@ -650,14 +681,15 @@ graph TD
 |-------|-----------|---------|
 | **Frontend** | React 19 + TypeScript | SPA with hooks-based state management |
 | **Styling** | Tailwind CSS 4 + Lucide Icons | Utility-first CSS with icon library |
-| **Animation** | Motion (Framer Motion) | Message transitions, pulse effects |
-| **Backend** | Express 4 + TypeScript (tsx) | API routes + Vite middleware integration |
-| **AI Model** | Gemini 3.5 Flash (`@google/genai`) | Conversational AI with system instructions |
-| **Voice** | Web Speech API (native browser) | Edge-native STT/TTS — zero-latency, privacy-safe |
-| **RAG** | Custom keyword scorer (`data.ts`) | 30+ hand-crafted RERA grounding chunks |
-| **Build** | Vite 6 (client) + esbuild (server → `dist/server.cjs`) | HMR dev + optimized production builds |
-| **Deployment** | Google Cloud Run (asia-southeast1) | Serverless container auto-scaling |
-| **Linting** | TypeScript strict mode (`tsc --noEmit`) | Compile-time type safety |
+| **Animation**| Motion (Framer Motion) | Message transitions, dynamic entry, layouts |
+| **Backend**  | Express 4 + TypeScript (tsx) | API routes + Vite dev middleware integration |
+| **AI Models**| Gemini 3.5 Flash & 3.1 TTS | Conversational AI and neural TTS proxies |
+| **Voice**    | Web Speech API (native browser) | On-device STT with speech synthesis fallbacks |
+| **Embeddings**| `@xenova/transformers` | all-MiniLM-L6-v2 ONNX context encoder |
+| **RAG**      | TF-IDF prioritizer (`data.ts`) | Zero-latency keyword lexical client-side fallback |
+| **Build**    | Vite 6 + esbuild (server) | Compilation pipeline targeting single `dist/server.cjs` |
+| **Deployment**| Google Cloud Run | Serverless container auto-scaling (via `asia-southeast1`) |
+| **Linting**  | TypeScript Strict Mode (`tsc`) | Compile-time compliance and type checks |
 
 ---
 
@@ -665,46 +697,46 @@ graph TD
 
 ```
 voice-first-pre-sales-real-estate-ai/
-├── server.ts                          # Express backend — API routes + Gemini integration + rule fallback engine
+├── server.ts                          # Express backend — AI endpoints, semantic retrieval, and Neural TTS
 ├── index.html                         # Vite entry HTML
-├── package.json                       # Dependencies & scripts (React 19, Gemini SDK, Express, Motion)
-├── tsconfig.json                      # TypeScript configuration (ES2022, bundler resolution, JSX)
-├── vite.config.ts                     # Vite bundler config (React + Tailwind plugins, HMR toggle)
-├── metadata.json                      # AI Studio deployment metadata (microphone permission)
-├── .env.example                       # Environment variable template (GEMINI_API_KEY, APP_URL)
+├── package.json                       # Dependencies & build scripts (React 19, Gemini SDK, Express)
+├── tsconfig.json                      # TypeScript configuration
+├── vite.config.ts                     # Vite bundler config with dynamic HMR block
+├── metadata.json                      # Deployment permissions metadata (microphone registration)
+├── .env.example                       # Environment variable template
 ├── .gitignore
-├── LICENSE                            # MIT License — Mohith Sai Gorla
+├── LICENSE                            # MIT License
 │
 ├── src/
-│   ├── main.tsx                       # React entry point (StrictMode + createRoot)
-│   ├── App.tsx                        # Main application shell — layout grid, modals, routing state
-│   ├── index.css                      # Global Tailwind import
-│   ├── types.ts                       # TypeScript interfaces (Project, UnitConfig, Message, BookingSession)
-│   ├── data.ts                        # RERA-grounded property data (4 projects) + 30+ RAG chunks + retrieveContext()
+│   ├── main.tsx                       # React entry point
+│   ├── App.tsx                        # Main application shell with layout grid, modal controllers
+│   ├── index.css                      # Global Tailwind CSS imports
+│   ├── types.ts                       # Shared interfaces and core entities definitions
+│   ├── data.ts                        # RERA listings + 30+ RAG grounding chunks + lexical retriever
 │   │
 │   ├── components/
-│   │   ├── VoiceBotWidget.tsx         # 🎤 Voice conversation interface — STT/TTS, RAG, lead scoring, booking detection
-│   │   ├── ProjectList.tsx            # 🏢 Filterable property catalog grid with region badges
-│   │   ├── CfoVastuSuite.tsx          # 📐 EMI calculator / Vastu scorer / NRI FEMA desk (3-tab suite)
-│   │   ├── HomeLoanCalculator.tsx     # 💳 Underwriting & loan eligibility desk (Continuous FOIR/LTV calculations)
-│   │   ├── SiteVisitBooking.tsx       # 📅 VIP site visit booking form modal with server-side persistence
-│   │   └── LeadActivityMonitor.tsx    # 📊 Real-time CRM lead feed with polling refresh
+│   │   ├── VoiceBotWidget.tsx         # Voice bot, lead metrics, trigger detection, and language toggles
+│   │   ├── ProjectList.tsx            # Property catalog list, dynamic cards, and region filters
+│   │   ├── CfoVastuSuite.tsx          # Amortization, RERA taxes, Vastu scorer, and NRI FEMA panels
+│   │   ├── HomeLoanCalculator.tsx     # Continuous bank underwriter with credit bureau logic
+│   │   ├── SiteVisitBooking.tsx       # Lead registration and date booking panel
+│   │   └── LeadActivityMonitor.tsx    # Live CRM telemetry monitoring bookings feed
 │   │
 │   ├── hooks/
-│   │   ├── useVoiceEngine.ts          # 🔊 STT/TTS orchestration hook — language switching, barge-in, voice selection
-│   │   └── useWhatsAppHandoff.ts      # 📲 LeadHot event listener → WhatsApp brochure dispatch webhook
+│   │   ├── useVoiceEngine.ts          # Speech synthesis (Hybrid: Server TTS / Web Speech) & barge-in hook
+│   │   └── useWhatsAppHandoff.ts      # LeadHot actions interceptor and template dispatcher
 │   │
 │   ├── utils/
-│   │   ├── guardrails.ts             # 🛡️ 4-stage guardrail pipeline (self-eval scrub, price, PII, RERA)
-│   │   └── LeadScorer.ts             # 📊 5-dimension buyer intent scoring engine with LeadHot event dispatch
+│   │   ├── guardrails.ts             # 5-stage pre-sales regulatory audit engine
+│   │   └── LeadScorer.ts             # Multi-variable real-time lead grading compiler
 │   │
 │   └── services/
-│       └── WhatsAppService.ts         # 📲 Meta WhatsApp Business Cloud API integration + simulation fallback
+│       └── WhatsAppService.ts         # Meta Cloud API courier integration and simulator
 │
-├── functions/
-│   └── index.js                       # Cloud Functions entry (if applicable)
+├── functions/                         # Serverless utility folders
+│   └── index.js
 │
-└── assets/                            # Static assets directory
+└── assets/                            # Images and static documents directory
 ```
 
 ---
@@ -713,7 +745,7 @@ voice-first-pre-sales-real-estate-ai/
 
 ### Prerequisites
 - **Node.js 18+** (LTS recommended)
-- A **Gemini API key** from [Google AI Studio](https://aistudio.google.com/) (optional — the app includes a rule-based fallback engine for offline usage)
+- A **Gemini API key** from [Google AI Studio](https://aistudio.google.com/) (optional — the app includes local fallsback for offline/unauthenticated running)
 
 ### Installation
 
@@ -727,145 +759,175 @@ npm install
 
 # Set up environment variables
 cp .env.example .env
-# Edit .env and add your GEMINI_API_KEY
+# Edit .env and supply your GEMINI_API_KEY
 ```
 
 ### Running Locally
 
+To initiate development:
 ```bash
-# Development server (with hot reload via tsx + Vite middleware)
+# Launch server-side hotdev
 npm run dev
+```
 
-# Production build (Vite client + esbuild server bundle)
+For production builds:
+```bash
+# Compile client and bundle server
 npm run build
 
-# Start production server
+# Start optimized runtime
 npm start
 ```
 
-The app will be available at `http://localhost:3000`.
+The server binds to port `3000` accessible locally at `http://localhost:3000`.
 
 ### Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `GEMINI_API_KEY` | Optional | Google Gemini API key. Falls back to rule engine if missing. |
-| `APP_URL` | Optional | Deployment URL (auto-injected by Cloud Run / AI Studio). |
-| `WHATSAPP_ACCESS_TOKEN` | Optional | Meta WhatsApp Business API token for live dispatch. |
-| `WHATSAPP_PHONE_NUMBER_ID` | Optional | Meta phone number ID for WhatsApp Cloud API. |
-| `WHATSAPP_TEMPLATE_NAME` | Optional | Pre-approved template name (default: `signature_estates_presales_brochure`). |
+| `GEMINI_API_KEY` | Optional | Google Gemini API key. Falls back to offline rules if omitted. |
+| `APP_URL` | Optional | The public URL of the deployment (set during Cloud Run setup). |
+| `WHATSAPP_ACCESS_TOKEN` | Optional | Permanent Meta Graph Access token for verified delivery. |
+| `WHATSAPP_PHONE_NUMBER_ID` | Optional | Business phone number sender identifier on Meta panel. |
+| `WHATSAPP_TEMPLATE_NAME` | Optional | Pre-approved templates name (`signature_estates_presales_brochure`). |
 
 ---
 
 ## 📡 API Reference
 
 ### `GET /api/health`
-Server health check + API key status.
-
-**Response:**
-```json
-{ "status": "healthy", "keyConfigured": true }
-```
+Checks server stability and Gemini credentials.
+- **Response:**
+  ```json
+  { "status": "healthy", "keyConfigured": true }
+  ```
 
 ---
 
 ### `POST /api/chat`
-Conversational AI endpoint with multi-turn history, edge RAG context overlay, and dual-engine support.
+Handles conversing with the pre-sales agent. Encapsulates active language alignment and inserts semantic context chunks.
+- **Request:**
+  ```json
+  {
+    "message": "What is the price of 3BHK in My Home Legend?",
+    "contextChunks": ["My Home Legend Kokapet: 3BHK Sky Villa ₹2.90 Cr - ₹3.15 Cr..."],
+    "history": [
+      { "sender": "user", "text": "Hi" },
+      { "sender": "assistant", "text": "Welcome! I am Aura..." }
+    ],
+    "activeLanguage": "en-IN"
+  }
+  ```
+- **Response:**
+  ```json
+  {
+    "text": "My Home Legend in Kokapet offers luxury 3 BHK layouts starting from ₹2.90 Crores.",
+    "engine": "gemini-3.5-flash"
+  }
+  ```
 
-**Request:**
-```json
-{
-  "message": "What is the price of 3BHK in My Home Legend Hyderabad?",
-  "contextChunks": ["My Home Legend Kokapet: 3BHK Sky Villa ₹2.90 Cr - ₹3.15 Cr..."],
-  "history": [
-    { "sender": "user", "text": "Hello" },
-    { "sender": "assistant", "text": "Welcome! How can I help?" }
-  ],
-  "activeLanguage": "en-IN"
-}
-```
+---
 
-**Response:**
-```json
-{
-  "text": "My Home Legend in Kokapet offers luxury 3 BHK units at ₹2.90 Crores...",
-  "engine": "gemini-3.5-flash"
-}
-```
+### `POST /api/tts`
+Synthesizes speech using the neural `gemini-3.1-flash-tts-preview` model for organic, region-specific speaking styles.
+- **Request:**
+  ```json
+  {
+    "text": "Your VIP site visit is confirmed.",
+    "language": "en-IN"
+  }
+  ```
+- **Response:**
+  ```json
+  {
+    "audio": "SUQzBAAAAAAAI1RTU0UAAAAKAAADTGFtZTMuOThy...",
+    "mimeType": "audio/mp3",
+    "voiceProfile": "Kore"
+  }
+  ```
 
-**Server Processing:**
-1. Constructs RERA grounding context overlay from `contextChunks`
-2. Builds Gemini-compatible multi-turn `contents` payload (role alternation enforced)
-3. If API key is configured: calls `ai.models.generateContent()` with `temperature: 0.3`, `maxOutputTokens: 750`
-4. If no API key: routes to `getRuleFallback()` — supports English, Hindi, Telugu
+--
+
+### `POST /api/semantic-retrieve`
+Queries the ONNX-backed Transformers.js engine utilizing `all-MiniLM-L6-v2` to retrieve similar context chunks.
+- **Request:**
+  ```json
+  {
+    "query": "Is there ev charging?",
+    "projectId": "dlf-horizon"
+  }
+  ```
+- **Response:**
+  ```json
+  {
+    "results": [
+      "DLF Horizon Sector 65 Gurugram features fully-wired ultra-rapid EV charging docks (rera-pricing-guide).",
+      "All projects come with active power grids for electrical vehicle components (rera-amenities-guide)."
+    ],
+    "useFallback": false
+  }
+  ```
 
 ---
 
 ### `POST /api/booking/create`
-Register a VIP site visit lead.
-
-**Request:**
-```json
-{
-  "name": "Anand Murthy",
-  "phone": "9845012345",
-  "email": "anand@outlook.in",
-  "projectId": "myhome-legend",
-  "projectName": "My Home Legend",
-  "preferredDate": "2026-06-07",
-  "preferredTime": "10:00 AM - 12:00 PM"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "booking": { "id": "book_1717100000000", "name": "Anand Murthy", "..." },
-  "message": "Thank you Anand Murthy! Your VIP site visit to My Home Legend has been registered."
-}
-```
+Saves and schedules a VIP physical visit.
+- **Request:**
+  ```json
+  {
+    "name": "Anand Murthy",
+    "phone": "9845012345",
+    "email": "anand@outlook.in",
+    "projectId": "myhome-legend",
+    "projectName": "My Home Legend",
+    "preferredDate": "2026-06-07",
+    "preferredTime": "10:00 AM - 12:00 PM"
+  }
+  ```
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "booking": { "id": "book_1717100000000", "name": "Anand Murthy", "..." },
+    "message": "VIP booking captured."
+  }
+  ```
 
 ---
 
 ### `GET /api/bookings`
-Retrieve all captured leads (in-memory store).
-
-**Response:**
-```json
-{ "bookings": [{ "id": "book_...", "name": "...", "..." }] }
-```
+Extracts stored CRM lead records.
+- **Response:**
+  ```json
+  { "bookings": [...] }
+  ```
 
 ---
 
 ### `POST /api/whatsapp-handoff`
-Trigger WhatsApp brochure dispatch via Meta Cloud API (or simulation).
-
-**Request:**
-```json
-{
-  "score": 95,
-  "triggers": ["DIRECT_TRANSACTION_INTENT", "NRI_BASIC_STATUS"],
-  "transcript": "I want to book My Home Legend",
-  "budgetDetected": "Crore-Tier",
-  "phone": "919845012345"
-}
-```
-
-**Response:**
-```json
-{
-  "success": true,
-  "dispatched": true,
-  "simulated": true,
-  "deliveryDetails": {
-    "timestamp": "2026-06-02T11:30:00.000Z",
-    "phoneNumber": "919845012345",
-    "mediaLink": "https://signature-estates.ai/docs/my-home-legend-brochure.pdf",
-    "projectDispatched": "My Home Legend"
+Pushes RERA brochures and scheduling invites to Meta Cloud APIs (or simulation).
+- **Request:**
+  ```json
+  {
+    "score": 95,
+    "triggers": ["DIRECT_TRANSACTION_INTENT"],
+    "transcript": "Book me a tour for legend",
+    "budgetDetected": "Crore-Tier",
+    "phone": "919845012345"
   }
-}
-```
+  ```
+- **Response:**
+  ```json
+  {
+    "success": true,
+    "dispatched": true,
+    "deliveryDetails": {
+      "timestamp": "2026-06-03T16:05:58Z",
+      "phoneNumber": "919845012345",
+      "mediaLink": "https://signature-estates.ai/docs/my-home-legend-brochure.pdf"
+    }
+  }
+  ```
 
 ---
 
@@ -873,17 +935,17 @@ Trigger WhatsApp brochure dispatch via Meta Cloud API (or simulation).
 
 The voice bot supports multilingual conversations with automatic language detection and matching TTS voice selection:
 
-| Language | Code | STT | TTS | AI Response | Rule Fallback | Script Detection |
-|----------|------|-----|-----|-------------|---------------|------------------|
-| English | `en-IN` | ✅ | ✅ | ✅ | ✅ Full | — |
-| Hindi (हिन्दी) | `hi-IN` | ✅ | ✅ | ✅ | ✅ Full | `[\u0900-\u097F]` |
-| Telugu (తెలుగు) | `te-IN` | ✅ | ✅ | ✅ | ✅ Full | `[\u0C00-\u0C7F]` |
-| Tamil (தமிழ்) | `ta-IN` | ✅ | ✅ | ✅ | ⚠️ Partial | — |
-| Marathi (मराठी) | `mr-IN` | ✅ | ✅ | ✅ | ⚠️ Partial | — |
-| Bengali (বাংলা) | `bn-IN` | ✅ | ✅ | ⚠️ | ⚠️ Partial | — |
-| Kannada (ಕನ್ನಡ) | `kn-IN` | ✅ | ✅ | ⚠️ | 🔜 Planned | — |
-| Gujarati (ગુજરાતી) | `gu-IN` | ✅ | ✅ | ⚠️ | 🔜 Planned | — |
-| Malayalam (മലയാളം) | `ml-IN` | ✅ | ✅ | ⚠️ | 🔜 Planned | — |
+| Language | Code | STT | TTS (Neural) | TTS (Local Edge) | AI Response | Rule Fallback | Voice Profile |
+|----------|------|-----|--------------|------------------|-------------|---------------|---------------|
+| English | `en-IN` | ✅ | ✅ | ✅ | ✅ | ✅ Full | `Kore` |
+| Hindi (हिन्दी) | `hi-IN` | ✅ | ✅ | ✅ | ✅ | ✅ Full | `Kore` |
+| Telugu (తెలుగు) | `te-IN` | ✅ | ✅ | ✅ | ✅ | ✅ Full | `Zephyr` |
+| Tamil (தமிழ்) | `ta-IN` | ✅ | ✅ | ✅ | ✅ | ⚠️ Partial | `Zephyr` |
+| Marathi (మరాठी) | `mr-IN` | ✅ | ✅ | ✅ | ✅ | ⚠️ Partial | `Puck` |
+| Bengali (বাংলা) | `bn-IN` | ✅ | ✅ | ✅ | ⚠️ | ⚠️ Partial | `Puck` |
+| Kannada (ಕನ್ನಡ) | `kn-IN` | ✅ | ✅ | ✅ | ⚠️ | 🔜 Planned | `Charon` |
+| Gujarati (ગુજરાતી) | `gu-IN` | ✅ | ✅ | ✅ | ⚠️ | 🔜 Planned | `Fenrir` |
+| Malayalam (മലയാളం) | `ml-IN` | ✅ | ✅ | ✅ | ⚠️ | 🔜 Planned | `Charon` |
 
 ---
 
@@ -903,21 +965,13 @@ The platform showcases four RERA-approved premium developments with complete gro
 ## 🧩 Design Decisions & Trade-offs
 
 ### Why Edge RAG instead of a Vector Database?
-The knowledge base is curated and bounded (4 properties × 6 categories + 15 general chunks). A keyword-scoring approach delivers **zero-latency context retrieval** with no external dependencies, which is ideal for a voice-first UX where every millisecond of latency degrades the user experience. This trades off semantic generalization for deterministic, auditable grounding.
+The knowledge base is curated and bounded (4 properties × 6 categories + 15 general chunks). A local keyword-scoring approach alongside an optional, embedded ONNX vector similarity engine (`all-MiniLM-L6-v2` loaded locally inside Node.js memory) delivers **ultra-fast retrieval times** with zero external database dependencies. This ensures that the voice widget responds inside the critical threshold, trading massive dimensional scaling for reliable on-premise performance.
 
 ### Why Client-Side Guardrails?
 Running guardrails on the client ensures the pipeline works identically in both Gemini and fallback modes. It also prevents RERA-violating content from ever reaching TTS — even if the server returns a problematic response due to prompt injection or model drift.
 
-### Why Browser-Native STT/TTS instead of Cloud APIs?
-Using Web Speech API keeps voice processing **entirely on-device**, which:
-1. Eliminates audio streaming latency to cloud ASR services
-2. Maintains DPDPA (Digital Personal Data Protection Act) compliance by keeping private voice data on the user's device
-3. Removes recurring API costs for speech services
-
-The trade-off is browser compatibility variations — mitigated by a text input fallback that's always available.
-
-### Why an In-Memory Booking Store?
-For a hackathon-scoped demo, an in-memory `BookingLead[]` array avoids database setup complexity. In production, this would be replaced with a persistent store (Firestore, PostgreSQL, etc.).
+### Why Browser-Native STT instead of Cloud ASR?
+Using the browser-native `SpeechRecognition` API handles on-device sound capture and decoding locally. It avoids the latency associated with streaming high-rate PCM bytes over networks and maintains extreme privacy standards under regional data acts.
 
 ### Why Dual-Engine Architecture?
 The rule-based fallback engine (`getRuleFallback()`) ensures the application is **fully functional without any API key**, which is critical for:
